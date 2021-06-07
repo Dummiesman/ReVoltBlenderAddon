@@ -2,7 +2,8 @@
 A Blender addon I created because I wanted to work with Blender 2.9+, and the existing one wasn't compatible.
 
 ## What's Supported
-Basic world (*.w) exporting
+Basic world (\*.w) exporting
+Mesh (\*.w/\*.prm) exporting
 
 ## Installation (Windows)
 Place the io_scene_revolt folder in the `%appdata%\Blender Foundation\Blender\2.90\scripts\addons` directory
