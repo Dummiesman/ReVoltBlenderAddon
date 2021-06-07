@@ -4,6 +4,9 @@ A Blender addon I created because I wanted to work with Blender 2.9+, and the ex
 ## What's Supported
 Basic world (*.w) exporting
 
+## Installation (Windows)
+Place the io_scene_revolt folder in the `%appdata%\Blender Foundation\Blender\2.90\scripts\addons` directory
+
 ## README: PORTING FROM OLD ADDON
 The way you do flags etc has changed. The way I've written this is more of a WYSIWYG (what you see is what you get) approach.
 - Translucent flag is set by the "Blend Mode" on a material being either "Alpha Hashed" or "Alpha Blend"
