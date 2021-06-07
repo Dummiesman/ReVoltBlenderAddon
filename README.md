@@ -3,6 +3,7 @@ A Blender addon I created because I wanted to work with Blender 2.9+, and the ex
 
 ## What's Supported
 Basic world (\*.w) exporting
+
 Mesh (\*.w/\*.prm) exporting
 
 ## Installation (Windows)
