@@ -9,6 +9,7 @@ Place the io_scene_revolt folder in the `%appdata%\Blender Foundation\Blender\2.
 
 ## README: PORTING FROM OLD ADDON
 The way you do flags etc has changed. The way I've written this is more of a WYSIWYG (what you see is what you get) approach.
+- Texture number is based on the texture assigned to a material. Ex. if you assign "mytrack_a", it will export faces with this material as texture 0.
 - Translucent flag is set by the "Blend Mode" on a material being either "Alpha Hashed" or "Alpha Blend"
 - Env flag is set by the specularity of a "Principled BSDF" material. The higher this property, the more env.
 - Double sided flag is set by a material having the "Backface Culling" option turned OFF
