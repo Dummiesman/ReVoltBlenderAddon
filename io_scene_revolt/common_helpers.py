@@ -7,6 +7,7 @@ import os.path as path
 
 # constants
 RV_LEVEL_SCALE = 10.0
+RV_MESH_SCALE = 10.0
 
 POLY_FLAG_QUAD = 0x01
 POLY_FLAG_DOUBLESIDED = 0x02

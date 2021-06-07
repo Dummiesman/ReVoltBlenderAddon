@@ -48,7 +48,7 @@ from io_scene_revolt.bakehelper import RVBakeHelper
 
 
 class ExportWorld(bpy.types.Operator, ExportHelper):
-    """Export to W file format (.w)"""
+    """Export to W file format"""
     bl_idname = "export_scene.rvworld"
     bl_label = 'Export Re-Volt World'
 
@@ -87,9 +87,51 @@ class ExportWorld(bpy.types.Operator, ExportHelper):
         return export_world.save(self, context, **keywords)
 
 
+class ExportMesh(bpy.types.Operator, ExportHelper):
+    """Export to PRM/M file format"""
+    bl_idname = "export_scene.rvmesh"
+    bl_label = 'Export Re-Volt Mesh'
+
+    filename_ext = ".m"
+    filter_glob: StringProperty(
+            default="*.m;*.prm",
+            options={'HIDDEN'},
+            )
+
+    apply_modifiers: BoolProperty(
+        name="Apply Modifiers",
+        default=True,
+        )
+        
+    apply_transform: BoolProperty(
+        name="Apply Transform",
+        default=False,
+        )
+        
+    def draw(self, context):
+        layout = self.layout
+        sub = layout.row()
+        sub.prop(self, "apply_modifiers")
+        sub = layout.row()
+        sub.prop(self, "apply_transform")
+        
+    def execute(self, context):
+        from . import export_mesh
+        
+        keywords = self.as_keywords(ignore=("axis_forward",
+                                            "axis_up",
+                                            "filter_glob",
+                                            "check_existing",
+                                            ))
+                                    
+        return export_mesh.save(self, context, **keywords)
+
 # Add to a menu
 def menu_func_export(self, context):
+    self.layout.separator()
+    self.layout.label(text="Re-Volt Addon")
     self.layout.operator(ExportWorld.bl_idname, text="Re-Volt World (.w)")
+    self.layout.operator(ExportMesh.bl_idname, text="Re-Volt Mesh (.m/.prm)")
 
 #def menu_func_import(self, context):
 #    self.layout.operator(ImportWorld.bl_idname, text="Re-Volt World (.w)")
@@ -101,6 +143,7 @@ def menu_func_bake(self, context):
 classes = (
     #ImportWorld,
     ExportWorld,
+    ExportMesh,
     RVBakeHelper
 )
 
