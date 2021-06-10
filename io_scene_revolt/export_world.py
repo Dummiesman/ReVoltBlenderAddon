@@ -59,10 +59,7 @@ def save(operator,
     scene_min = [float('inf'),float('inf'),float('inf')]
     scene_max = [float('-inf'),float('-inf'),float('-inf')]
     for ob in objs:
-        ob_bounds = common.bounds_scaled(ob, common.RV_LEVEL_SCALE)
-        ob_bounds_min = common.vec3_to_revolt((ob_bounds.x.min, ob_bounds.y.min, ob_bounds.z.min))
-        ob_bounds_max = common.vec3_to_revolt((ob_bounds.x.max, ob_bounds.y.max, ob_bounds.z.max))
-    
+        ob_bounds_min, ob_bounds_max = common.bounds_scaled_rv(ob, common.RV_LEVEL_SCALE)
         for x in range(3):
             scene_min[x] = min(scene_min[x], ob_bounds_min[x])
             scene_max[x] = max(scene_max[x], ob_bounds_max[x])

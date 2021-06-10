@@ -21,13 +21,6 @@ def get_principled_from_material_slot(ob, slotnum):
             return node
     return None
     
-def get_material_from_material_slot(ob, slotnum):
-    if len(ob.material_slots) == 0:
-        return None
-        
-    slot = ob.material_slots[slotnum]
-    return slot.material
-    
 ######################################################
 # EXPORT MAIN FILES
 ######################################################
@@ -41,10 +34,7 @@ def export_mesh(file, ob, bm, env_list, apply_transform, is_world):
         
     if is_world:
         # write bounding info for world
-        ob_bounds = common.bounds_scaled(ob, common.RV_MESH_SCALE, not apply_transform)
-        ob_bounds_min = common.vec3_to_revolt((ob_bounds.x.min, ob_bounds.y.min, ob_bounds.z.min))
-        ob_bounds_max = common.vec3_to_revolt((ob_bounds.x.max, ob_bounds.y.max, ob_bounds.z.max))
-        
+        ob_bounds_min, ob_bounds_max = common.bounds_scaled_rv(ob, common.RV_MESH_SCALE, not apply_transform)
         ob_center = ((ob_bounds_max[0] + ob_bounds_min[0]) / 2, (ob_bounds_max[1] + ob_bounds_min[1]) / 2, (ob_bounds_max[2] + ob_bounds_min[2]) / 2)
         ob_radius = max(abs(ob_bounds_max[0] - ob_bounds_min[0]), abs(ob_bounds_max[1] - ob_bounds_min[1]), abs(ob_bounds_max[2] - ob_bounds_min[2]))
         
