@@ -13,7 +13,7 @@ Hull (\*.hul) importing *(\*this re-creates the hull based on it's vertices)*
 ## Installation (Windows)
 Place the io_scene_revolt folder in the `%appdata%\Blender Foundation\Blender\2.90\scripts\addons` directory
 
-## README: PORTING FROM OLD ADDON (PRM/M/W)
+## README: WORKING WITH PRM/M/W
 The way you do flags etc has changed. The way I've written this is more of a WYSIWYG (what you see is what you get) approach.
 - Texture number is based on the texture assigned to a material. Ex. if you assign "mytrack_a", it will export faces with this material as texture 0.
 - Translucent flag is set by the "Blend Mode" on a material being either "Alpha Hashed" or "Alpha Blend"
@@ -23,8 +23,13 @@ The way you do flags etc has changed. The way I've written this is more of a WYS
 - Texture animations are currently not supported
 - Mirror flag is currently not supported
 
-## README: PORTING FROM OLD ADDON (NCP)
+## README: WORKING WITH NCP
 The way collision is setup has changed.
 - Select your collision object, open the search menu, and locate "Setup NCP Object"
   - This will add NCP materials to the objects material list
 - Camera only / Object only flags are done with Face Maps, these are in the "Mesh Data" tab of the object
+
+## README: WORKING WITH HUL
+- Selected objects will be exported as convex hulls
+- Any object named "HullSphere" is exported as a sphere
+  - The size of exported spheres is the average *scale* of the object. To make a 'compatible' sphere model, create a 1 diameter UV sphere.
