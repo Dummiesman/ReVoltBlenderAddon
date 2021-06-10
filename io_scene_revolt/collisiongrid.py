@@ -166,8 +166,8 @@ class CollisionGrid:
             bucket = self.buckets[(d * self.width_sections) + w]
             face_list = bucket.indices
             final_face_list = bucket.final_indices
-            
             final_face_list += face_list
+            
             for d2 in range(-1, 2):
                 for w2 in range(-1, 2):
                     if d2 == 0 and w2 == 0:
@@ -178,7 +178,10 @@ class CollisionGrid:
                         other_bucket = self.buckets[other_bucket_index]
                         other_bucket_face_list = other_bucket.indices
                         final_face_list += other_bucket_face_list
-    
+
+            # finally, keep only distinct values
+            final_face_list = list(set(final_face_list))
+
     def finalize(self):
         for bucket in self.buckets:
             bucket.final_indices = []

@@ -34,7 +34,7 @@ def export_mesh(file, ob, bm, env_list, apply_transform, is_world):
         
     if is_world:
         # write bounding info for world
-        ob_bounds_min, ob_bounds_max = common.bounds_scaled_rv(ob, common.RV_MESH_SCALE, not apply_transform)
+        ob_bounds_min, ob_bounds_max = common.bounds_scaled_rv(ob, common.RV_SCALE, not apply_transform)
         ob_center = ((ob_bounds_max[0] + ob_bounds_min[0]) / 2, (ob_bounds_max[1] + ob_bounds_min[1]) / 2, (ob_bounds_max[2] + ob_bounds_min[2]) / 2)
         ob_radius = max(abs(ob_bounds_max[0] - ob_bounds_min[0]), abs(ob_bounds_max[1] - ob_bounds_min[1]), abs(ob_bounds_max[2] - ob_bounds_min[2]))
         
@@ -119,9 +119,9 @@ def export_mesh(file, ob, bm, env_list, apply_transform, is_world):
     for vert in bm.verts:
         vert_revolt = None
         if apply_transform:
-            vert_revolt = mathutils.Vector((common.vec3_to_revolt(ob.matrix_world @ vert.co))) * common.RV_MESH_SCALE
+            vert_revolt = mathutils.Vector((common.vec3_to_revolt(ob.matrix_world @ vert.co))) * common.RV_SCALE
         else:
-            vert_revolt = mathutils.Vector((common.vec3_to_revolt(vert.co))) * common.RV_MESH_SCALE
+            vert_revolt = mathutils.Vector((common.vec3_to_revolt(vert.co))) * common.RV_SCALE
         
         file.write(struct.pack("<fff", vert_revolt[0], vert_revolt[1], vert_revolt[2]))
         file.write(struct.pack("<fff", *common.vec3_to_revolt(vert.normal)))

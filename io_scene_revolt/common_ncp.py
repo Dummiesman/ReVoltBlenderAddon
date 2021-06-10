@@ -1,4 +1,5 @@
 import bpy
+import io_scene_revolt.common_helpers as common
 
 FACEMAP_OBJECT_ONLY = "Object Only"
 FACEMAP_CAMERA_ONLY = "Camera Only"
@@ -35,27 +36,6 @@ NCP_MATERIALS = [(0, "DEFAULT",              (0.6,0.6,0.6)),
                  (26, "PAVING",              (0.56,0.5,0.45))]
 
 
-def create_colored_material(name, color):
-    mat = bpy.data.materials.new(name=name)
-
-    mat.use_nodes = True
-    mat.use_backface_culling = True
-    
-    nodetree = mat.node_tree
-    nodetree.links.clear()
-    nodetree.nodes.clear()
-        
-    diffuse = nodetree.nodes.new(type = 'ShaderNodeBsdfDiffuse')
-    output = nodetree.nodes.new(type = 'ShaderNodeOutputMaterial' )
-    
-    nodetree.links.new( diffuse.outputs['BSDF'], output.inputs['Surface'] )
-    
-    diffuse.inputs['Color'].default_value = (*color, 1)
-    mat.diffuse_color = (*color,1)
-    
-    return mat
-
- 
 def get_ncp_id_from_material(mat):
     if mat is not None:
         if "ncp_material_id" in mat:
@@ -75,7 +55,7 @@ def create_shared_ncp_materials():
     for m_id, m_name, m_color in NCP_MATERIALS:
         existing = find_ncp_material(m_id)
         if existing is None:
-            newmat = create_colored_material("NCP_" + m_name, m_color)
+            newmat = common.create_colored_material("NCP_" + m_name, m_color)
             newmat["ncp_material_id"] = m_id
 
 def add_ncp_materials(ob):

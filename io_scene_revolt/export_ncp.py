@@ -64,7 +64,7 @@ def save(operator,
         for vert in bmtemp.verts:
             if apply_transform:
                 vert.co = ob.matrix_world @ vert.co
-            vert.co *= common.RV_MESH_SCALE
+            vert.co *= common.RV_SCALE
         
         bmtemp.to_mesh(tempmesh) # save temp bmesh into mesh
         bmtemp.free()

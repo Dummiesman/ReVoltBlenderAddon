@@ -6,9 +6,6 @@ import os
 import os.path as path
 
 # constants
-RV_LEVEL_SCALE = 10.0
-RV_MESH_SCALE = 10.0
-
 POLY_FLAG_QUAD = 0x01
 POLY_FLAG_DOUBLESIDED = 0x02
 POLY_FLAG_TRANSLUCENT = 0x04
@@ -19,6 +16,33 @@ COLL_FLAG_QUAD = 0x01
 COLL_FLAG_OBJECT_ONLY = 0x04
 COLL_FLAG_CAMERA_ONLY = 0x08
 
+RV_SCALE = 10
+        
+def create_colored_material(name, color):
+    color_list = [1, 1, 1, 1]
+    for x in range(min(len(color_list), len(color))):
+        color_list[x] = color[x]
+    
+    mat = bpy.data.materials.new(name=name)
+
+    mat.use_nodes = True
+    mat.use_backface_culling = True
+    
+    nodetree = mat.node_tree
+    nodetree.links.clear()
+    nodetree.nodes.clear()
+        
+    diffuse = nodetree.nodes.new(type = 'ShaderNodeBsdfDiffuse')
+    output = nodetree.nodes.new(type = 'ShaderNodeOutputMaterial' )
+    
+    nodetree.links.new( diffuse.outputs['BSDF'], output.inputs['Surface'] )
+    
+    diffuse.inputs['Color'].default_value = color_list
+    mat.diffuse_color = color_list
+    
+    return mat
+
+
 def vec3_to_revolt(co):
     return (co[0], co[2] * -1, co[1])
 
@@ -26,7 +50,11 @@ def vec3_to_revolt(co):
 def vec2_to_revolt(co):
     return (co[0], 1 - co[1])
 
- 
+
+def vec3_to_blender(co):
+    return (co[0], co[2], co[1] * -1)
+
+
 def to_rv_color(color):
     r = int(max(0, min(color[0], 1)) * 255)
     g = int(max(0, min(color[1], 1)) * 255)
@@ -142,3 +170,10 @@ def get_material_from_material_slot(ob, slotnum):
         
     slot = ob.material_slots[slotnum]
     return slot.material
+    
+######################################################
+# LOAD PREFS
+######################################################
+preferences = bpy.context.preferences
+addon_prefs = preferences.addons[__package__].preferences
+RV_SCALE = addon_prefs.scale
