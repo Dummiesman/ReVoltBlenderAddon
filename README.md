@@ -4,7 +4,11 @@ A Blender addon I created because I wanted to work with Blender 2.9+, and the ex
 ## What's Supported
 Basic world (\*.w) exporting  
 Mesh (\*.w/\*.prm) exporting  
-Collision (\*.ncp) exporting
+Collision (\*.ncp) exporting  
+Hull (\*.hul) exporting
+
+Collision (\*.ncp) importing  
+Hull (\*.hul) importing *(\*this re-creates the hull based on it's vertices)*
 
 ## Installation (Windows)
 Place the io_scene_revolt folder in the `%appdata%\Blender Foundation\Blender\2.90\scripts\addons` directory
