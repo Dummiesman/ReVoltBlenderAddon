@@ -23,7 +23,7 @@ class RV_FaceMaterialHash:
        
     def get_name(self):
         flags_str = ""
-        if self.is_world and self.flags & common.POLY_FLAG_DISABLEENV:
+        if self.is_world and self.flags & common.POLY_FLAG_ENABLEENV:
             flags_str += "Env"
         elif not self.is_world and not self.flags & common.POLY_FLAG_DISABLEENV:
             flags_str += "Env"
@@ -49,7 +49,7 @@ class RV_FaceMaterialHash:
             name_str += "_" + flags_str
         
         # DEBUG
-        # name_str += "(" + str(self.flags) + ")"
+        #name_str += "(" + str(self.flags) + ")"
         
         return name_str
         
