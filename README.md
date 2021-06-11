@@ -2,13 +2,12 @@
 A Blender addon I created because I wanted to work with Blender 2.9+, and the existing one wasn't compatible.
 
 ## What's Supported
-World (\*.w) export and import
-Mesh (\*.w/\*.prm) export and import
-Collision (\*.ncp) export and import
-Hull (\*.hul) export and import
+World (\*.w) export and import  
+Mesh (\*.w/\*.prm) export and import  
+Collision (\*.ncp) export and import  
+Hull (\*.hul) export and import*  
 
-Collision (\*.ncp) importing  
-Hull (\*.hul) importing *(\*this re-creates the hull based on it's vertices)*
+*\*this re-creates the hull based on it's vertices*
 
 ## Installation (Windows)
 Place the io_scene_revolt folder in the `%appdata%\Blender Foundation\Blender\2.90\scripts\addons` directory
