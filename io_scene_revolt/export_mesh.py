@@ -56,6 +56,7 @@ def export_mesh(file, ob, bm, env_list, apply_transform, is_world):
         face_type = 1 if len(face.loops) == 4 else 0
         
         material = get_material_from_material_slot(ob, face.material_index)
+        material = common.get_material_from_material_slot(ob, face.material_index)
         if material is not None:
             if not material.use_backface_culling:
                 face_type |= common.POLY_FLAG_DOUBLESIDED
