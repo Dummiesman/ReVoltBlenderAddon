@@ -232,6 +232,54 @@ class ExportHull(bpy.types.Operator, ExportHelper):
         return export_hul.save(self, context, **keywords)
         
 
+class ImportWorld(bpy.types.Operator, ImportHelper):
+    """Import from W file format"""
+    bl_idname = "import_scene.rvworld"
+    bl_label = 'Import Re-Volt World'
+
+    filename_ext = ".w"
+    filter_glob: StringProperty(
+            default="*.w",
+            options={'HIDDEN'},
+            )
+
+       
+    def execute(self, context):
+        from . import import_world
+        
+        keywords = self.as_keywords(ignore=("axis_forward",
+                                            "axis_up",
+                                            "filter_glob",
+                                            "check_existing",
+                                            ))
+                                    
+        return import_world.load(self, context, **keywords)
+
+    
+class ImportMesh(bpy.types.Operator, ImportHelper):
+    """Import from PRM/M file format"""
+    bl_idname = "import_scene.rvmesh"
+    bl_label = 'Import Re-Volt Mesh'
+
+    filename_ext = ".m"
+    filter_glob: StringProperty(
+            default="*.m;*.prm",
+            options={'HIDDEN'},
+            )
+
+       
+    def execute(self, context):
+        from . import import_mesh
+        
+        keywords = self.as_keywords(ignore=("axis_forward",
+                                            "axis_up",
+                                            "filter_glob",
+                                            "check_existing",
+                                            ))
+                                    
+        return import_mesh.load(self, context, **keywords)
+
+
 class ImportHull(bpy.types.Operator, ImportHelper):
     """Import from HUL file format"""
     bl_idname = "import_scene.rvhull"
@@ -303,6 +351,8 @@ def menu_func_export(self, context):
 def menu_func_import(self, context):
     self.layout.separator()
     self.layout.label(text="Re-Volt Addon")
+    self.layout.operator(ImportWorld.bl_idname, text="Re-Volt World (.w)")
+    self.layout.operator(ImportMesh.bl_idname, text="Re-Volt Mesh (.m/.prm)")
     self.layout.operator(ImportHull.bl_idname, text="Re-Volt Hull (.hul)")
     self.layout.operator(ImportCollision.bl_idname, text="Re-Volt Collision (.ncp)")
     self.layout.separator()
@@ -313,11 +363,12 @@ def menu_func_ops(self, context):
 
 # Register factories
 classes = (
-    #ImportWorld,
     ExportWorld,
     ExportMesh,
     ExportCollision,
     ExportHull,
+    ImportWorld,
+    ImportMesh,
     ImportCollision,
     ImportHull,
     RVBakeHelper,

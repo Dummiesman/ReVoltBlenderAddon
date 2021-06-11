@@ -55,14 +55,15 @@ def export_mesh(file, ob, bm, env_list, apply_transform, is_world):
         # get flags
         face_type = 1 if len(face.loops) == 4 else 0
         
-        material = get_material_from_material_slot(ob, face.material_index)
         material = common.get_material_from_material_slot(ob, face.material_index)
         if material is not None:
             if not material.use_backface_culling:
                 face_type |= common.POLY_FLAG_DOUBLESIDED
             if material.blend_method == 'HASHED' or material.blend_method == 'BLEND':
                 face_type |= common.POLY_FLAG_TRANSLUCENT
-                
+            if material.use_screen_refraction:
+                face_type |= common.POLY_FLAG_MIRROR
+
         # principled data
         principled = get_principled_from_material_slot(ob, face.material_index)
         spec_amount = 0.0
@@ -70,10 +71,14 @@ def export_mesh(file, ob, bm, env_list, apply_transform, is_world):
         
         if principled is not None:
             # env flag
-            spec_amount = principled.inputs["Specular"].default_value
-            if is_world and spec_amount > 0.01:
+            spec_input = principled.inputs["Specular"]
+            spec_links = spec_input.links
+            if is_world and len(spec_links) > 0 and spec_links[0].from_node.type == 'RGB':
+                rgb_node = spec_links[0].from_node
+                rgb_value = tuple(rgb_node.outputs[0].default_value)
+                
                 face_type |= common.POLY_FLAG_ENABLEENV
-                env_color = (1,1,1,spec_amount) # TODO
+                env_color = rgb_value
                 env_list.append(env_color)
             elif not is_world and spec_amount <= 0.01:
                 face_type |= common.POLY_FLAG_DISABLEENV

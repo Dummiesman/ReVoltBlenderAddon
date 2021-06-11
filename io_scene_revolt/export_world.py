@@ -77,8 +77,8 @@ def save(operator,
     for x in range(len(objs)):
         file.write(struct.pack('<L', x)) # mesh index
     
-    # Unk List
-    file.write(struct.pack('L', 0)) # 0 unklist
+    # Texanim List
+    file.write(struct.pack('L', 0)) # not supported for now
     
     # Env List
     for color in env_list:

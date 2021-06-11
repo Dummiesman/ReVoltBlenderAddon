@@ -9,6 +9,8 @@ import os.path as path
 POLY_FLAG_QUAD = 0x01
 POLY_FLAG_DOUBLESIDED = 0x02
 POLY_FLAG_TRANSLUCENT = 0x04
+POLY_FLAG_MIRROR = 0x80
+POLY_FLAG_ADDITIVE = 0x100
 POLY_FLAG_DISABLEENV = 0x400
 POLY_FLAG_ENABLEENV = 0x800
 
@@ -53,6 +55,19 @@ def vec2_to_revolt(co):
 
 def vec3_to_blender(co):
     return (co[0], co[2], co[1] * -1)
+    
+    
+def vec2_to_blender(co):
+    # symmetric operation
+    return vec2_to_revolt(co)
+
+
+def from_rv_color(color):
+    b = max(0, min(float(color[0]) / 255, 1))
+    g = max(0, min(float(color[1]) / 255, 1))
+    r = max(0, min(float(color[2]) / 255, 1))
+    a = max(0, min(float(color[3]) / 255, 1))
+    return (r,g,b,a)
 
 
 def to_rv_color(color):
@@ -128,6 +143,14 @@ def face_bounds_rv(face):
     bnds_min = vec3_to_revolt(bnds_min)
     bnds_max = vec3_to_revolt(bnds_max)
     return ((bnds_min[0], bnds_max[1], bnds_min[2]), (bnds_max[0], bnds_min[1], bnds_max[2]))
+
+
+def set_material_texture(mat, texture):
+    tree = mat.node_tree.nodes if mat.node_tree is not None else []    
+    for node in tree:
+        if node.type == 'TEX_IMAGE':
+            node.image = texture
+            break
 
 
 def get_material_texture(mat):
