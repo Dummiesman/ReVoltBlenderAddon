@@ -80,7 +80,7 @@ def export_mesh(file, ob, bm, env_list, apply_transform, is_world):
                 face_type |= common.POLY_FLAG_ENABLEENV
                 env_color = rgb_value
                 env_list.append(env_color)
-            elif not is_world and spec_amount <= 0.01:
+            elif not is_world and (spec_input.default_value <= 0.01 and len(spec_links) == 0):
                 face_type |= common.POLY_FLAG_DISABLEENV
             
             # translucent amount
