@@ -2,10 +2,10 @@
 A Blender addon I created because I wanted to work with Blender 2.9+, and the existing one wasn't compatible.
 
 ## What's Supported
-Basic world (\*.w) exporting  
-Mesh (\*.w/\*.prm) exporting  
-Collision (\*.ncp) exporting  
-Hull (\*.hul) exporting
+World (\*.w) export and import
+Mesh (\*.w/\*.prm) export and import
+Collision (\*.ncp) export and import
+Hull (\*.hul) export and import
 
 Collision (\*.ncp) importing  
 Hull (\*.hul) importing *(\*this re-creates the hull based on it's vertices)*
@@ -18,10 +18,12 @@ The way you do flags etc has changed. The way I've written this is more of a WYS
 - Texture number is based on the texture assigned to a material. Ex. if you assign "mytrack_a", it will export faces with this material as texture 0.
 - Translucent flag is set by the "Blend Mode" on a material being either "Alpha Hashed" or "Alpha Blend"
   - Alpha value for vertex color is set by the "Alpha" slider in a "Principled BSDF" material 
-- Env flag is set by the specularity of a "Principled BSDF" material. The higher this property, the more env.
+- Env flag is set by the specularity of a "Principled BSDF" material.
+  - On tracks, hook up a Color node to the Specular input, this will be used as env color
+  - On cars, just set the slider above 0 for env, or to 0 for no env
 - Double sided flag is set by a material having the "Backface Culling" option turned OFF
 - Texture animations are currently not supported
-- Mirror flag is currently not supported
+- Mirror flag is set by the "Screen Space Refraction" checkbox in material properties
 
 ## README: WORKING WITH NCP
 The way collision is setup has changed.
