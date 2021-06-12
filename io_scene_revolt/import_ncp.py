@@ -47,13 +47,11 @@ def load(operator,
 
     me = bpy.data.meshes.new("Collision")
     ob = bpy.data.objects.new("Collision", me)
-    ncpcommon.add_ncp_materials(ob)
-    ncpcommon.add_ncp_facemaps(ob)
-    
     bm = bmesh.new()
-    bm.from_mesh(me)
     fm_layer = bm.faces.layers.face_map.new()
     
+    ncpcommon.add_ncp_materials(ob)
+    ncpcommon.add_ncp_facemaps(ob)
     scn.collection.objects.link(ob)
     
     # face map

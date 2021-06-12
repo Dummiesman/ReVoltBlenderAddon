@@ -17,10 +17,7 @@ def load_mesh(file, is_world, env_queue, matdict = None):
     
     me = bpy.data.meshes.new("Mesh")
     ob = bpy.data.objects.new("Mesh", me)
-        
     bm = bmesh.new()
-    bm.from_mesh(me)
-    
     scn.collection.objects.link(ob)
     
     # create layers for this object
