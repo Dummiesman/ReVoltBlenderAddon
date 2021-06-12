@@ -6,6 +6,7 @@ World (\*.w) export and import
 Mesh (\*.w/\*.prm) export and import  
 Collision (\*.ncp) export and import  
 Hull (\*.hul) export and import*  
+Mirror Planes (\*.rim) export and import  
 
 *\*this re-creates the hull based on it's vertices*
 
@@ -24,6 +25,8 @@ The way you do flags etc has changed. The way I've written this is more of a WYS
 - Texture animations are currently not supported
 - Mirror flag is set by the "Screen Space Refraction" checkbox in material properties
 
+**The W exporter also functions as an alternative to WorldCut!** Just select the "Split Meshes" option upon exporting.
+
 ## README: WORKING WITH NCP
 The way collision is setup has changed.
 - Select your collision object, open the search menu, and locate "Setup NCP Object"
@@ -34,3 +37,8 @@ The way collision is setup has changed.
 - Selected objects will be exported as convex hulls
 - Any object named "HullSphere" is exported as a sphere
   - The size of exported spheres is the average *scale* of the object. To make a 'compatible' sphere model, create a 1 diameter UV sphere.
+
+## README: WORKING WITH RIM
+- Any object named "MirrorPlane" is exported as mirror planes
+  - Using "Selected Only" will override this behavior
+
