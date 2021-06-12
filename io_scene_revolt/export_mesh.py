@@ -3,6 +3,7 @@ import bpy, bmesh, mathutils
 from mathutils import Vector
 
 import io_scene_revolt.common_helpers as common
+from io_scene_revolt.rvexportmaterialinfo import RVExportMaterialInfo
 
 ######################################################
 # EXPORT MAIN FILES
@@ -14,7 +15,7 @@ def export_mesh(file, ob, bm, env_list, is_world):
     
     common.prepare_bmesh(bm)
     bm.verts.ensure_lookup_table()
-        
+
     if is_world:
         # write bounding info for world
         me_bounds_min, me_bounds_max = common.bmesh_bounds_scaled_rv(bm, common.RV_SCALE)
@@ -35,52 +36,24 @@ def export_mesh(file, ob, bm, env_list, is_world):
 
     # cache material info for faster export
     # list of (material, principled, texnum)
-    default_material_info = (None, None, -1)
+    default_material_info = RVExportMaterialInfo(None, is_world)
     material_info = []
     for x in range(len(ob.material_slots)):
         mat = ob.material_slots[x].material
-        principled = common.get_principled_from_material(mat)
-        texnum = common.get_texnum_from_material(mat)
-
-        material_info.append((mat, principled, texnum))
+        info = RVExportMaterialInfo(mat, is_world)
+        material_info.append(info)
 
     # write faces
     for face in bm.faces:        
         # get flags
         face_type = 1 if len(face.loops) == 4 else 0
-        material, principled, texnum = material_info[face.material_index] if face.material_index >= 0 else default_material_info
         
-        if material is not None:
-            if not material.use_backface_culling:
-                face_type |= common.POLY_FLAG_DOUBLESIDED
-            if material.blend_method == 'HASHED' or material.blend_method == 'BLEND':
-                face_type |= common.POLY_FLAG_TRANSLUCENT
-            if material.use_screen_refraction:
-                face_type |= common.POLY_FLAG_MIRROR
-
-        # principled data
-        spec_amount = 0.0
-        alpha_amount = 1.0
-        
-        if principled is not None:
-            # env flag
-            spec_input = principled.inputs["Specular"]
-            spec_links = spec_input.links
-            if is_world and len(spec_links) > 0 and spec_links[0].from_node.type == 'RGB':
-                rgb_node = spec_links[0].from_node
-                rgb_value = tuple(rgb_node.outputs[0].default_value)
-                
-                face_type |= common.POLY_FLAG_ENABLEENV
-                env_color = rgb_value
-                env_list.append(env_color)
-            elif not is_world and (spec_input.default_value <= 0.01 and len(spec_links) == 0):
-                face_type |= common.POLY_FLAG_DISABLEENV
-            
-            # translucent amount
-            alpha_amount = principled.inputs["Alpha"].default_value
+        # get mat info
+        matinfo = material_info[face.material_index] if face.material_index >= 0 else default_material_info
+        face_type |= matinfo.flags
         
         # write
-        file.write(struct.pack("<Hh", face_type, texnum)) # Face Type, Tex Num
+        file.write(struct.pack("<Hh", face_type, matinfo.texnum)) # Face Type, Tex Num
         
         # Indices
         for loop in reversed(face.loops):
@@ -94,7 +67,7 @@ def export_mesh(file, ob, bm, env_list, is_world):
             color = loop[vc_layer]
 
             if face_type & common.POLY_FLAG_TRANSLUCENT:
-                color = (color[0], color[1], color[2], alpha_amount)
+                color = (color[0], color[1], color[2], matinfo.alpha)
             
             rvcolor = common.to_rv_color(color) 
             file.write(struct.pack("<BBBB", *rvcolor))
@@ -107,6 +80,10 @@ def export_mesh(file, ob, bm, env_list, is_world):
             file.write(struct.pack("<ff", *common.vec2_to_revolt(uv)))
         if not (face_type & common.POLY_FLAG_QUAD):
             file.write(struct.pack("<ff", 0, 0)) # uv 4
+            
+        # Env List
+        if is_world and matinfo.is_env and env_list is not None:
+            env_list.append(matinfo.env_color)
         
     # write vertices
     for vert in bm.verts:
