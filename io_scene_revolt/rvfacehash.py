@@ -38,6 +38,8 @@ class RV_FaceMaterialHash:
             flags_str += "Add"
         if self.flags & common.POLY_FLAG_MIRROR:
             flags_str += "Mirror"
+        if self.flags & common.POLY_FLAG_ANIMATED:
+            flags_str += "Anim"
         
         name_str = "RVMaterial_"
         if self.texnum < 0:
