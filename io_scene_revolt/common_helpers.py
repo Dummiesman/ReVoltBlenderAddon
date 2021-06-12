@@ -11,6 +11,7 @@ POLY_FLAG_DOUBLESIDED = 0x02
 POLY_FLAG_TRANSLUCENT = 0x04
 POLY_FLAG_MIRROR = 0x80
 POLY_FLAG_ADDITIVE = 0x100
+POLY_FLAG_ANIMATED = 0x200
 POLY_FLAG_DISABLEENV = 0x400
 POLY_FLAG_ENABLEENV = 0x800
 
@@ -309,6 +310,19 @@ def get_material_from_material_slot(ob, slotnum):
         
     slot = ob.material_slots[slotnum]
     return slot.material
+    
+
+def str_index_safe(string, find, start=None, end=None):
+    if start is None:
+        start = 0
+    if end is None:
+        end = len(string)
+        
+    try:
+        return string.index(find, start, end)
+    except ValueError:
+        return -1
+
     
 ######################################################
 # LOAD PREFS

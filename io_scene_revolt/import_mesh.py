@@ -1,10 +1,34 @@
-import bpy
-import bmesh
-import struct, math, time, collections
+import bpy, bmesh
+import struct, math, time, collections, os
 from mathutils import Vector
 
 import io_scene_revolt.common_helpers as common
 from io_scene_revolt.rvfacehash import RV_FaceMaterialHash
+
+######################################################
+# HELPERS
+######################################################
+def finalize_mesh_materials_stage1(filepath, materials):
+    filepath_ext = os.path.splitext(filepath)[1][1:].lower()
+    if filepath_ext != "prm":
+        return
+
+    filepath_dir = os.path.dirname(filepath)
+    carbmp_path = os.path.join(filepath_dir, "car.bmp")
+    
+    if not os.path.isfile(carbmp_path):
+        return
+    
+    carbmp = bpy.data.images.load(carbmp_path)
+    for mat in materials:
+        if "NoTex" in mat.name or not "RVMaterial" in mat.name:
+            continue
+        common.set_material_texture(mat, carbmp)
+        
+
+def finalize_mesh_materials_stage2(filepath, materials):
+    for mat in materials:
+        common.set_material_vertex_blend(mat)
 
 ######################################################
 # IMPORT
@@ -71,6 +95,7 @@ def load_mesh(file, is_world, env_queue, matdict = None):
         poly_hash = RV_FaceMaterialHash(poly_texture, poly_type, is_world)
         if is_world and poly_type & common.POLY_FLAG_ENABLEENV and env_queue is not None and len(env_queue) > 0:
             poly_hash.set_env_color(env_queue.popleft())
+          
         if poly_type & common.POLY_FLAG_TRANSLUCENT:
             avg_alpha = 0
             for y in range(loop_count):
@@ -138,10 +163,16 @@ def load(operator,
     file = open(filepath, 'rb')
     
     #
-    load_mesh(file, False, None)
+    shared_matdict = {}
+    load_mesh(file, False, None, shared_matdict)
 
     # cleanup     
     file.close()
+    
+    # load textures
+    unique_materials = set(shared_matdict.values())
+    finalize_mesh_materials_stage1(filepath, unique_materials)
+    finalize_mesh_materials_stage2(filepath, unique_materials)
     
     # import complete
     print(" done in %.4f sec." % (time.perf_counter() - time1))

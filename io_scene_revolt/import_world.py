@@ -1,6 +1,6 @@
 import bpy
 import bmesh
-import struct, math, time, collections
+import struct, math, time, collections, os
 from mathutils import Vector
 
 import io_scene_revolt.common_helpers as common
@@ -34,9 +34,45 @@ def seek_past_texanim(file):
     file.seek(40 * frame_count, 1)
         
 
-def load_world_textures(filepath, materials):
-    # todo :)
-    pass
+def finalize_world_materials(filepath, materials):
+    filepath_noext = os.path.splitext(filepath)[0]
+    loaded_textures = {}
+    
+    for mat in materials:
+        if "NoTex" in mat.name or not "RVMaterial" in mat.name:
+            continue
+        
+        # extract texnum from material name
+        name = common.get_undupe_name(mat.name)
+        texnum = 0        
+
+        tex_index = common.str_index_safe(name, "Tex")
+        if tex_index < 0:
+            continue
+            
+        uscore_index = common.str_index_safe(name, "_", tex_index)
+        if uscore_index >= 0:
+            texnum = int(name[tex_index+3:uscore_index])
+        else:
+            texnum = int(name[tex_index+3:])
+    
+        # load or set texture
+        if texnum in loaded_textures:
+            texture = loaded_textures[texnum]
+            if texture is not None:
+                common.set_material_texture(mat, loaded_textures[texnum])
+        else:
+            texchar = chr(texnum + ord('a'))
+            texpath = filepath_noext + texchar + ".bmp"
+            
+            if os.path.isfile(texpath):
+                loaded_textures[texnum] = bpy.data.images.load(texpath)
+                common.set_material_texture(mat, loaded_textures[texnum])
+            else:
+                loaded_textures[texnum] = None
+
+    for mat in materials:
+        common.set_material_vertex_blend(mat)
 
 ######################################################
 # IMPORT
@@ -92,11 +128,8 @@ def load(operator,
     file.close()
     
     # load textures
-    unique_materials = set()
-    for k in shared_matdict:
-        mat = shared_matdict[k]
-        unique_materials.add(mat.name)
-    load_world_textures(filepath, unique_materials)
+    unique_materials = set(shared_matdict.values())
+    finalize_world_materials(filepath, unique_materials)
     
     # import complete
     print(" done in %.4f sec." % (time.perf_counter() - time1))
