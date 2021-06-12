@@ -20,6 +20,22 @@ COLL_FLAG_CAMERA_ONLY = 0x08
 
 RV_SCALE = 10
         
+def get_undupe_name(name):
+    nidx = name.find('.')
+    return name[:nidx] if nidx != -1 else name
+
+
+def find_objects_by_name(name, ob_type = 'MESH'):
+    objs = []
+    for ob in bpy.data.objects:
+        if ob.type == ob_type:
+            undupe_name = get_undupe_name(ob.name)
+            if undupe_name.lower() == name.lower():
+                objs.append(ob)
+                
+    return objs  
+
+
 def create_colored_material(name, color):
     color_list = [1, 1, 1, 1]
     for x in range(min(len(color_list), len(color))):
@@ -146,6 +162,9 @@ def face_bounds_rv(face):
 
 
 def set_material_texture(mat, texture):
+def bm_to_world(bm, ob):
+    for vert in bm.verts:
+        vert.co = ob.matrix_world @ vert.co
     tree = mat.node_tree.nodes if mat.node_tree is not None else []    
     for node in tree:
         if node.type == 'TEX_IMAGE':

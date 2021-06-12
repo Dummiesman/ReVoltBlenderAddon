@@ -232,6 +232,46 @@ class ExportHull(bpy.types.Operator, ExportHelper):
         return export_hul.save(self, context, **keywords)
         
 
+class ExportMirrors(bpy.types.Operator, ExportHelper):
+    """Export to RIM file format"""
+    bl_idname = "export_scene.rvmirr"
+    bl_label = 'Export Re-Volt Mirrors'
+
+    filename_ext = ".rim"
+    filter_glob: StringProperty(
+            default="*.rim",
+            options={'HIDDEN'},
+            )
+
+    apply_transform: BoolProperty(
+        name="Apply Transform",
+        default=True,
+        )
+        
+    selected_only: BoolProperty(
+        name="Selected Only",
+        default=False,
+        )
+        
+    def draw(self, context):
+        layout = self.layout
+        sub = layout.row()
+        sub.prop(self, "apply_transform")
+        sub = layout.row()
+        sub.prop(self, "selected_only")
+        
+    def execute(self, context):
+        from . import export_rim
+        
+        keywords = self.as_keywords(ignore=("axis_forward",
+                                            "axis_up",
+                                            "filter_glob",
+                                            "check_existing",
+                                            ))
+                                    
+        return export_rim.save(self, context, **keywords)
+        
+
 class ImportWorld(bpy.types.Operator, ImportHelper):
     """Import from W file format"""
     bl_idname = "import_scene.rvworld"
@@ -338,6 +378,30 @@ class ImportCollision(bpy.types.Operator, ImportHelper):
         return import_ncp.load(self, context, **keywords)
 
 
+class ImportMirrors(bpy.types.Operator, ImportHelper):
+    """Import from RIM file format"""
+    bl_idname = "import_scene.rvmirr"
+    bl_label = 'Import Re-Volt Mirrors'
+
+    filename_ext = ".rim"
+    filter_glob: StringProperty(
+            default="*.rim",
+            options={'HIDDEN'},
+            )
+
+
+    def execute(self, context):
+        from . import import_rim
+        
+        keywords = self.as_keywords(ignore=("axis_forward",
+                                            "axis_up",
+                                            "filter_glob",
+                                            "check_existing",
+                                            ))
+                                    
+        return import_rim.load(self, context, **keywords)
+
+
 # Add to a menu
 def menu_func_export(self, context):
     self.layout.separator()
@@ -346,6 +410,7 @@ def menu_func_export(self, context):
     self.layout.operator(ExportMesh.bl_idname, text="Re-Volt Mesh (.m/.prm)")
     self.layout.operator(ExportHull.bl_idname, text="Re-Volt Hull (.hul)")
     self.layout.operator(ExportCollision.bl_idname, text="Re-Volt Collision (.ncp)")
+    self.layout.operator(ExportMirrors.bl_idname, text="Re-Volt Mirrors (.rim)")
     self.layout.separator()
 
 def menu_func_import(self, context):
@@ -355,6 +420,7 @@ def menu_func_import(self, context):
     self.layout.operator(ImportMesh.bl_idname, text="Re-Volt Mesh (.m/.prm)")
     self.layout.operator(ImportHull.bl_idname, text="Re-Volt Hull (.hul)")
     self.layout.operator(ImportCollision.bl_idname, text="Re-Volt Collision (.ncp)")
+    self.layout.operator(ImportMirrors.bl_idname, text="Re-Volt Mirrors (.rim)")
     self.layout.separator()
 
 def menu_func_ops(self, context):
@@ -367,10 +433,12 @@ classes = (
     ExportMesh,
     ExportCollision,
     ExportHull,
+    ExportMirrors,
     ImportWorld,
     ImportMesh,
     ImportCollision,
     ImportHull,
+    ImportMirrors,
     RVBakeHelper,
     NCPSetupOperator
 )
