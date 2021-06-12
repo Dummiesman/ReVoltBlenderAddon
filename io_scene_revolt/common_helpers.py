@@ -203,6 +203,9 @@ def bm_to_world(bm, ob):
 
 
 def get_principled_from_material(mat):
+    if mat is None:
+        return None
+
     tree = mat.node_tree.nodes if mat.node_tree is not None else []    
     for node in tree:
         if node.type == 'BSDF_PRINCIPLED':

@@ -5,20 +5,6 @@ from mathutils import Vector
 import io_scene_revolt.common_helpers as common
 
 ######################################################
-# EXPORT HELPERS
-######################################################
-def get_principled_from_material_slot(ob, slotnum):
-    if len(ob.material_slots) == 0:
-        return None
-        
-    slot = ob.material_slots[slotnum]
-    if slot.material is None:
-        return None
-    
-    return common.get_principled_from_material(slot.material)
-
-    
-######################################################
 # EXPORT MAIN FILES
 ######################################################
 def export_mesh(file, ob, bm, env_list, is_world):
@@ -46,13 +32,24 @@ def export_mesh(file, ob, bm, env_list, is_world):
         
     # polygon and vertex counts
     file.write(struct.pack("<HH", len(bm.faces), len(bm.verts)))
-    
+
+    # cache material info for faster export
+    # list of (material, principled, texnum)
+    default_material_info = (None, None, -1)
+    material_info = []
+    for x in range(len(ob.material_slots)):
+        mat = ob.material_slots[x].material
+        principled = common.get_principled_from_material(mat)
+        texnum = common.get_texnum_from_material(mat)
+
+        material_info.append((mat, principled, texnum))
+
     # write faces
     for face in bm.faces:        
         # get flags
         face_type = 1 if len(face.loops) == 4 else 0
+        material, principled, texnum = material_info[face.material_index] if face.material_index >= 0 else default_material_info
         
-        material = common.get_material_from_material_slot(ob, face.material_index)
         if material is not None:
             if not material.use_backface_culling:
                 face_type |= common.POLY_FLAG_DOUBLESIDED
@@ -62,7 +59,6 @@ def export_mesh(file, ob, bm, env_list, is_world):
                 face_type |= common.POLY_FLAG_MIRROR
 
         # principled data
-        principled = get_principled_from_material_slot(ob, face.material_index)
         spec_amount = 0.0
         alpha_amount = 1.0
         
@@ -82,9 +78,6 @@ def export_mesh(file, ob, bm, env_list, is_world):
             
             # translucent amount
             alpha_amount = principled.inputs["Alpha"].default_value
-        
-        # get texnum
-        texnum = common.get_texnum_from_material(material)
         
         # write
         file.write(struct.pack("<Hh", face_type, texnum)) # Face Type, Tex Num
