@@ -41,6 +41,9 @@ def save(operator,
         bmtemp.from_mesh(ob.data) # fill temp mesh with object data
         common.prepare_bmesh(bmtemp)
         
+        if apply_transform:
+            common.bm_to_world(bmtemp, ob)
+        
         # copy out things to the maps
         fm_layer = bmtemp.faces.layers.face_map.verify()
         for face in bmtemp.faces:
@@ -60,11 +63,9 @@ def save(operator,
                     ncp_type |= common.COLL_FLAG_OBJECT_ONLY
             bm_typebits_map.append(ncp_type)
             
-        # apply scale, position and rotation
+        # apply RV_SCALE
         for vert in bmtemp.verts:
-            if apply_transform:
-                vert.co = ob.matrix_world @ vert.co
-            vert.co *= common.RV_SCALE
+             vert.co *= common.RV_SCALE
         
         bmtemp.to_mesh(tempmesh) # save temp bmesh into mesh
         bmtemp.free()

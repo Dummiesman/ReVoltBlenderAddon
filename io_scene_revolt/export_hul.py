@@ -4,25 +4,6 @@ from mathutils import Vector
 
 import io_scene_revolt.common_helpers as common
 
-######################################################
-# HELPERS
-######################################################
-def get_undupe_name(name):
-    nidx = name.find('.')
-    return name[:nidx] if nidx != -1 else name
-
-
-def find_objects_with_undupe_name(name, ob_type = 'MESH'):
-    objs = []
-    for ob in bpy.data.objects:
-        if ob.type == ob_type:
-            undupe_name = get_undupe_name(ob.name)
-            print("checking " + undupe_name.lower() + "==" + name.lower())
-            if undupe_name.lower() == name.lower():
-                print("APPENDING")
-                objs.append(ob)
-                
-    return objs
 
 ######################################################
 # EXPORT
@@ -40,7 +21,7 @@ def save(operator,
     # get objs
     hull_objs = bpy.context.selected_objects
     hull_objs = [x for x in hull_objs if x.type == 'MESH']
-    sphere_objs = find_objects_with_undupe_name("HullSphere")
+    sphere_objs = common.find_objects_by_name("HullSphere")
     
     if len(hull_objs) == 0:
         raise Exception("Select the convex hull mesh(es) before exporting")
