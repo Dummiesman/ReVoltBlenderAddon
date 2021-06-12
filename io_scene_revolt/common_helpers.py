@@ -19,7 +19,8 @@ COLL_FLAG_OBJECT_ONLY = 0x04
 COLL_FLAG_CAMERA_ONLY = 0x08
 
 RV_SCALE = 10
-        
+BCUBE_SIZE = 12500
+
 def get_undupe_name(name):
     nidx = name.find('.')
     return name[:nidx] if nidx != -1 else name
@@ -150,7 +151,7 @@ def face_bounds(face):
         for x in range(3):
             bnds_min[x] = min(bnds_min[x], vert.co[x])
             bnds_max[x] = max(bnds_max[x], vert.co[x])
-                
+    
     return (bnds_min, bnds_max)
 
 
@@ -161,16 +162,112 @@ def face_bounds_rv(face):
     return ((bnds_min[0], bnds_max[1], bnds_min[2]), (bnds_max[0], bnds_min[1], bnds_max[2]))
 
 
-def set_material_texture(mat, texture):
+def bmesh_bounds(bm):
+    bnds_min = [float('inf'),float('inf'),float('inf')]
+    bnds_max = [float('-inf'),float('-inf'),float('-inf')]
+    for vert in bm.verts:
+        for x in range(3):
+            bnds_min[x] = min(bnds_min[x], vert.co[x])
+            bnds_max[x] = max(bnds_max[x], vert.co[x])
+
+    return (bnds_min, bnds_max)
+    
+    
+def bmesh_bounds_scaled(bm, scale):
+    bnds_min, bnds_max = bmesh_bounds(bm)
+    for x in range(3):
+        bnds_min[x] *= scale
+        bnds_max[x] *= scale
+    
+    return (bnds_min, bnds_max)
+
+
+def bmesh_bounds_rv(bm):
+    bnds_min, bnds_max = bmesh_bounds(bm)
+    bnds_min = vec3_to_revolt(bnds_min)
+    bnds_max = vec3_to_revolt(bnds_max)
+    return ((bnds_min[0], bnds_max[1], bnds_min[2]), (bnds_max[0], bnds_min[1], bnds_max[2]))
+
+
+def bmesh_bounds_scaled_rv(bm, scale):
+    bnds_min, bnds_max = bmesh_bounds_scaled(bm, scale)
+    bnds_min = vec3_to_revolt(bnds_min)
+    bnds_max = vec3_to_revolt(bnds_max)
+    return ((bnds_min[0], bnds_max[1], bnds_min[2]), (bnds_max[0], bnds_min[1], bnds_max[2]))
+
+
 def bm_to_world(bm, ob):
     for vert in bm.verts:
         vert.co = ob.matrix_world @ vert.co
+
+
+def get_principled_from_material(mat):
     tree = mat.node_tree.nodes if mat.node_tree is not None else []    
+    for node in tree:
+        if node.type == 'BSDF_PRINCIPLED':
+            return node
+    return None
+
+
+def set_material_vertex_blend(mat):
+    if mat is None or mat.node_tree is None:
+        return
+
+    principled_data = get_principled_from_material(mat)
+    if principled_data is None:
+        return
+    
+    color_input = principled_data.inputs['Base Color']
+    old_input = None
+    vc_output = None
+    
+    if len(color_input.links) > 0:
+        link = color_input.links[0]
+        old_input = link.from_socket
+        mat.node_tree.links.remove(link)
+    else:
+        vc_output = color_input
+        
+    # create node setup
+    if old_input is not None:
+        vec_math_node = mat.node_tree.nodes.new('ShaderNodeVectorMath')
+        vec_math_node.operation = 'MULTIPLY'
+        vc_output = vec_math_node.inputs[0]
+        
+        mat.node_tree.links.new(old_input, vec_math_node.inputs[1])
+        mat.node_tree.links.new(vec_math_node.outputs[0], color_input)
+        
+        
+    vert_color_node = mat.node_tree.nodes.new('ShaderNodeVertexColor')
+    mat.node_tree.links.new(vert_color_node.outputs['Color'], vc_output)
+    
+    
+def set_material_texture(mat, texture, make_image_node=True):
+    if mat is None or mat.node_tree is None:
+        return
+    
+    tree = mat.node_tree.nodes
     for node in tree:
         if node.type == 'TEX_IMAGE':
             node.image = texture
-            break
-
+            return
+            
+    # image node was not found
+    if make_image_node:
+        principled_data = get_principled_from_material(mat)
+        if principled_data is not None:
+            color_input = principled_data.inputs['Base Color']
+            
+            # something is already here?
+            if len(color_input.links) > 0:
+                return
+                
+            # create and hook up our image
+            tex_image_node = tree.new('ShaderNodeTexImage')
+            tex_image_node.image = texture
+            
+            mat.node_tree.links.new(principled_data.inputs['Base Color'], tex_image_node.outputs['Color'])
+    
 
 def get_material_texture(mat):
     tree = mat.node_tree.nodes if mat.node_tree is not None else []    

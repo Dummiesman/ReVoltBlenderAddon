@@ -70,12 +70,29 @@ class ExportWorld(bpy.types.Operator, ExportHelper):
         default=False,
         )
         
+    split: BoolProperty(
+        name="Split Exported Meshes",
+        default=True,
+        )
+        
+    split_size: FloatProperty(
+        name="Split Size",        
+        default=4096,
+        min=16        
+        )
+        
     def draw(self, context):
         layout = self.layout
         sub = layout.row()
         sub.prop(self, "apply_modifiers")
         sub = layout.row()
         sub.prop(self, "selected_only")
+        layout.separator()
+        sub = layout.row()
+        sub.prop(self, "split")
+        sub = layout.row()
+        sub.enabled = self.split
+        sub.prop(self, "split_size")
         
     def execute(self, context):
         from . import export_world

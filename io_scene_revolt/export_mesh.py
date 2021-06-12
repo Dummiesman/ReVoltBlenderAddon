@@ -15,37 +15,34 @@ def get_principled_from_material_slot(ob, slotnum):
     if slot.material is None:
         return None
     
-    tree = slot.material.node_tree.nodes if slot.material.node_tree is not None else []    
-    for node in tree:
-        if node.type == 'BSDF_PRINCIPLED':
-            return node
-    return None
+    return common.get_principled_from_material(slot.material)
+
     
 ######################################################
 # EXPORT MAIN FILES
 ######################################################
-def export_mesh(file, ob, bm, env_list, apply_transform, is_world):
+def export_mesh(file, ob, bm, env_list, is_world):
     # layers
-    uv_layer = bm.loops.layers.uv.active
-    vc_layer = bm.loops.layers.color.active
+    uv_layer = bm.loops.layers.uv.verify()
+    vc_layer = bm.loops.layers.color.verify()
     
     common.prepare_bmesh(bm)
     bm.verts.ensure_lookup_table()
         
     if is_world:
         # write bounding info for world
-        ob_bounds_min, ob_bounds_max = common.bounds_scaled_rv(ob, common.RV_SCALE, not apply_transform)
-        ob_center = ((ob_bounds_max[0] + ob_bounds_min[0]) / 2, (ob_bounds_max[1] + ob_bounds_min[1]) / 2, (ob_bounds_max[2] + ob_bounds_min[2]) / 2)
-        ob_radius = max(abs(ob_bounds_max[0] - ob_bounds_min[0]), abs(ob_bounds_max[1] - ob_bounds_min[1]), abs(ob_bounds_max[2] - ob_bounds_min[2]))
+        me_bounds_min, me_bounds_max = common.bmesh_bounds_scaled_rv(bm, common.RV_SCALE)
+        me_center = ((me_bounds_max[0] + me_bounds_min[0]) / 2, (me_bounds_max[1] + me_bounds_min[1]) / 2, (me_bounds_max[2] + me_bounds_min[2]) / 2)
+        me_radius = max(abs(me_bounds_max[0] - me_bounds_min[0]), abs(me_bounds_max[1] - me_bounds_min[1]), abs(me_bounds_max[2] - me_bounds_min[2]))
         
         # center and radius
-        file.write(struct.pack("<fff", *ob_center))
-        file.write(struct.pack("<f", ob_radius))
+        file.write(struct.pack("<fff", *me_center))
+        file.write(struct.pack("<f", me_radius))
         
         # bounds
-        file.write(struct.pack("<ff", ob_bounds_min[0], ob_bounds_max[0]))
-        file.write(struct.pack("<ff", ob_bounds_min[1], ob_bounds_max[1]))
-        file.write(struct.pack("<ff", ob_bounds_min[2], ob_bounds_max[2]))
+        file.write(struct.pack("<ff", me_bounds_min[0], me_bounds_max[0]))
+        file.write(struct.pack("<ff", me_bounds_min[1], me_bounds_max[1]))
+        file.write(struct.pack("<ff", me_bounds_min[2], me_bounds_max[2]))
         
     # polygon and vertex counts
     file.write(struct.pack("<HH", len(bm.faces), len(bm.verts)))
@@ -101,9 +98,8 @@ def export_mesh(file, ob, bm, env_list, apply_transform, is_world):
         
         # Colors
         for loop in reversed(face.loops):
-            color = (1,1,1,1)
-            if vc_layer is not None:
-                color = loop[vc_layer]
+            color = loop[vc_layer]
+
             if face_type & common.POLY_FLAG_TRANSLUCENT:
                 color = (color[0], color[1], color[2], alpha_amount)
             
@@ -114,20 +110,14 @@ def export_mesh(file, ob, bm, env_list, apply_transform, is_world):
             
         # UVs
         for loop in reversed(face.loops):
-            uv = (0,0)
-            if uv_layer is not None:
-                uv = loop[uv_layer].uv
+            uv = loop[uv_layer].uv
             file.write(struct.pack("<ff", *common.vec2_to_revolt(uv)))
         if not (face_type & common.POLY_FLAG_QUAD):
             file.write(struct.pack("<ff", 0, 0)) # uv 4
         
     # write vertices
     for vert in bm.verts:
-        vert_revolt = None
-        if apply_transform:
-            vert_revolt = mathutils.Vector((common.vec3_to_revolt(ob.matrix_world @ vert.co))) * common.RV_SCALE
-        else:
-            vert_revolt = mathutils.Vector((common.vec3_to_revolt(vert.co))) * common.RV_SCALE
+        vert_revolt = mathutils.Vector((common.vec3_to_revolt(vert.co))) * common.RV_SCALE
         
         file.write(struct.pack("<fff", vert_revolt[0], vert_revolt[1], vert_revolt[2]))
         file.write(struct.pack("<fff", *common.vec3_to_revolt(vert.normal)))
@@ -165,8 +155,11 @@ def save(operator,
     # get bmesh
     bm = bmesh.new()
     bm.from_mesh(temp_mesh)
+    
+    if apply_transform:
+        common.bm_to_world(bm, obj)
         
-    export_mesh(file, obj, bm, None, apply_transform, False)
+    export_mesh(file, obj, bm, None, False)
     
     # cleanup
     bm.free()
