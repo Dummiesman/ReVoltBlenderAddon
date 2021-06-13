@@ -180,7 +180,7 @@ class CollisionGrid:
                         final_face_list += other_bucket_face_list
 
             # finally, keep only distinct values
-            final_face_list = list(set(final_face_list))
+            bucket.final_indices = list(set(final_face_list))
 
     def finalize(self):
         for bucket in self.buckets:
