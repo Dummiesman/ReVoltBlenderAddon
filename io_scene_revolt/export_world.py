@@ -125,12 +125,15 @@ def save(operator,
     import io_scene_revolt.export_mesh as export_mesh
     print("exporting World: %r..." % (filepath))
     time1 = time.perf_counter()
-    
+    wm = bpy.context.window_manager
+    wm.progress_begin(0, 1)
+
     # get objs
     objs = bpy.context.selected_objects if selected_only else bpy.data.objects
     objs = [x for x in objs if x.type == 'MESH']
-
-    if len(objs) == 0:
+    ob_count = len(objs)
+    
+    if ob_count == 0:
         raise Exception("Didn't find any valid objects to export")
         
     # export world
@@ -179,10 +182,14 @@ def save(operator,
 
     # write meshes
     print(" ... mesh exporting (%.4f)" % (time.perf_counter() - time1))
+    export_counter = 0
     for ob, meshes, indices in mesh_list:
         for mesh in meshes:
             #def export_mesh(file, ob, bm, env_list, is_world):
             export_mesh.export_mesh(file, ob, mesh, env_list, True)
+            
+        export_counter += 1
+        wm.progress_update((export_counter / ob_count) * 0.9)
 
     # calculate bigcubes
     # we make a single bigcube here if not splitting since we can't guarantee 
@@ -201,6 +208,8 @@ def save(operator,
         for x in me_indices:
             file.write(struct.pack('<L', x)) # mesh index
     
+    wm.progress_update(1.0)
+    
     # Texanim List
     print(" ... texanim writing (%.4f)" % (time.perf_counter() - time1))
     file.write(struct.pack('L', 0)) # not supported for now
@@ -215,6 +224,7 @@ def save(operator,
         for mesh in meshes:
             mesh.free()
     file.close()
+    wm.progress_end()
 
     # export complete
     print(" done in %.4f sec." % (time.perf_counter() - time1))
