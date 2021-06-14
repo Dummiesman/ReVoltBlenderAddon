@@ -29,26 +29,6 @@ from io_scene_revolt.bakehelper import RVBakeHelper
 from io_scene_revolt.ncpsetup import NCPSetupOperator
 import io_scene_revolt.bl_preferences as bl_preferences
 
-#class ImportWorld(bpy.types.Operator, ImportHelper):
-#    """Import from W file format (.w)"""
-#    bl_idname = "import_scene.rvworld"
-#    bl_label = 'Import Re-Volt World'
-#    bl_options = {'UNDO'}
-#
-#    filename_ext = ".w"
-#    filter_glob: StringProperty(default="*.w", options={'HIDDEN'})
-#
-#    def execute(self, context):
-#        from . import import_world
-#        keywords = self.as_keywords(ignore=("axis_forward",
-#                                            "axis_up",
-#                                            "filter_glob",
-#                                            "check_existing",
-#                                            ))
-#
-#        return import_world.load(self, context, **keywords)
-
-
 class ExportWorld(bpy.types.Operator, ExportHelper):
     """Export to W file format"""
     bl_idname = "export_scene.rvworld"
@@ -111,7 +91,9 @@ class ExportMesh(bpy.types.Operator, ExportHelper):
     bl_idname = "export_scene.rvmesh"
     bl_label = 'Export Re-Volt Mesh'
 
+    check_extension = False
     filename_ext = ".m"
+
     filter_glob: StringProperty(
             default="*.m;*.prm",
             options={'HIDDEN'},
