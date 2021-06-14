@@ -5,7 +5,7 @@ bl_info = {
     "blender": (2, 90, 0),
     "location": "File > Import-Export",
     "description": "Import-Export Re-Volt files",
-    "warning": "*VERY EARLY VERSION WITH ALMOST NO FEATURES*",
+    "warning": "Functionally works, but needs more testing. It's possible things may go wrong.",
     "doc_url": "https://github.com/Dummiesman/ReVoltBlenderAddon/",
     "tracker_url": "https://github.com/Dummiesman/ReVoltBlenderAddon/",
     "support": 'COMMUNITY',
