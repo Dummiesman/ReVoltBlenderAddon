@@ -326,6 +326,22 @@ def str_index_safe(string, find, start=None, end=None):
     except ValueError:
         return -1
 
+
+def get_bmesh(ob, apply_modifiers=False):
+    temp_mesh = None
+    
+    if apply_modifiers:
+        dg = bpy.context.evaluated_depsgraph_get()
+        eval_obj = ob.evaluated_get(dg)
+        temp_mesh = eval_obj.to_mesh()
+    else:
+        temp_mesh = ob.to_mesh()
+        
+    # get bmesh
+    bm = bmesh.new()
+    bm.from_mesh(temp_mesh)
+    
+    return bm
     
 ######################################################
 # LOAD PREFS

@@ -114,17 +114,8 @@ def save(operator,
     # export mesh
     file = open(filepath, 'wb')
     
-    temp_mesh = None
-    if apply_modifiers:
-        dg = bpy.context.evaluated_depsgraph_get()
-        eval_obj = obj.evaluated_get(dg)
-        temp_mesh = eval_obj.to_mesh()
-    else:
-        temp_mesh = obj.to_mesh()
-        
     # get bmesh
-    bm = bmesh.new()
-    bm.from_mesh(temp_mesh)
+    bm = common.get_bmesh(obj, apply_modifiers = apply_modifiers)
     
     if apply_transform:
         common.bm_to_world(bm, obj)

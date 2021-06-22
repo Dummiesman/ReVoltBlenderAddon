@@ -37,10 +37,9 @@ def save(operator,
     
     for ob in objs:
         tempmesh = bpy.data.meshes.new("temp") # create a temporary mesh
-        bmtemp = bmesh.new() # temporary mesh to add to the bm
-        bmtemp.from_mesh(ob.data) # fill temp mesh with object data
+        bmtemp = common.get_bmesh(ob, apply_modifiers = apply_modifiers) # temporary mesh to add to the bm
         common.prepare_bmesh(bmtemp)
-        
+
         if apply_transform:
             common.bm_to_world(bmtemp, ob)
         

@@ -151,19 +151,8 @@ def save(operator,
     # prepare meshes
     print(" ... preparing (%.4f)" % (time.perf_counter() - time1))
     for ob in objs:
-        # create temp mesh
-        temp_mesh = None
-        
-        if apply_modifiers:
-            dg = bpy.context.evaluated_depsgraph_get()
-            eval_obj = ob.evaluated_get(dg)
-            temp_mesh = eval_obj.to_mesh()
-        else:
-            temp_mesh = ob.to_mesh()
-            
         # get bmesh
-        bm = bmesh.new()
-        bm.from_mesh(temp_mesh)
+        bm = common.get_bmesh(ob, apply_modifiers = apply_modifiers)
         common.bm_to_world(bm, ob)
         
         # split if requested

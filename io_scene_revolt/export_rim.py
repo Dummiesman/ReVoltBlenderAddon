@@ -32,8 +32,7 @@ def save(operator,
     plane_meshes = []
     for ob in objs:
         # get bmesh
-        bm = bmesh.new()
-        bm.from_mesh(ob.data)
+        bm = common.get_bmesh(ob)
         
         # transform vertices
         if apply_transform:

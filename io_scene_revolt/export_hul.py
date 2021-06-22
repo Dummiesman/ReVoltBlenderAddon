@@ -32,18 +32,8 @@ def save(operator,
     # write chulls
     file.write(struct.pack("<H", len(hull_objs)))
     for ob in hull_objs:
-        # create temp mesh
-        temp_mesh = None
-        if apply_modifiers:
-            dg = bpy.context.evaluated_depsgraph_get()
-            eval_obj = ob.evaluated_get(dg)
-            temp_mesh = eval_obj.to_mesh()
-        else:
-            temp_mesh = ob.to_mesh()
-        
         # get bmesh
-        bm = bmesh.new()
-        bm.from_mesh(temp_mesh)
+        bm = common.get_bmesh(ob, apply_modifiers = apply_modifiers)
     
         # export
         bm.verts.ensure_lookup_table()
