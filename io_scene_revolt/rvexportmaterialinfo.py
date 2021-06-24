@@ -8,6 +8,7 @@ class RVExportMaterialInfo:
         self.env_color = (1,1,1,1)
         self.flags = 0
         self.texnum = common.get_texnum_from_material(mat)
+        self.mul_vertex_color = False
         
         if mat is not None:
             if not mat.use_backface_culling:
@@ -34,6 +35,20 @@ class RVExportMaterialInfo:
             spec_input = principled.inputs["Specular"]
             spec_links = spec_input.links
             
+            alpha_input = principled.inputs["Alpha"]
+            alpha_links = alpha_input.links
+            
+            if len(alpha_links) > 0:
+                if alpha_links[0].from_node.type == 'VERTEX_COLOR':
+                    link = alpha_links[0]
+                    self.mul_vertex_color = (link.from_socket.name == 'Alpha')
+                elif alpha_links[0].from_node.type == 'MATH' and alpha_links[0].from_node.operation == 'MULTIPLY':
+                    # check if vertex alpha is one of the inputs for math, and math mode is multiply
+                    math_node = alpha_links[0].from_node
+                    
+                    self.mul_vertex_color = (len(math_node.inputs[0].links) > 0 and math_node.inputs[0].links[0].from_node.type == 'VERTEX_COLOR' and math_node.inputs[0].links[0].from_socket.name == 'Alpha'
+                                             len(math_node.inputs[1].links) > 0 and math_node.inputs[1].links[0].from_node.type == 'VERTEX_COLOR' and math_node.inputs[1].links[0].from_socket.name == 'Alpha')
+        
             if is_world:
                 if len(spec_links) > 0 and spec_links[0].from_node.type == 'RGB':
                     rgb_node = spec_links[0].from_node

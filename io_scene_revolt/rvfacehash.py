@@ -80,6 +80,7 @@ class RV_FaceMaterialHash:
         if self.flags & common.POLY_FLAG_TRANSLUCENT:
             bsdf.inputs['Alpha'].default_value = self.alpha
             mat.blend_method = 'BLEND'
+            common.set_material_vertex_alpha(mat)
             
         if self.flags & common.POLY_FLAG_MIRROR:
             bsdf.inputs['Specular'].default_value = 0.05

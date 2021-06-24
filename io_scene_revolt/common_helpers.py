@@ -266,6 +266,19 @@ def set_material_additive_blend(mat):
     mat.node_tree.links.new(old_socket, add_node.inputs[0])
     mat.node_tree.links.new(add_node.outputs[0], out_node.inputs["Surface"])
 
+
+def set_material_vertex_alpha(mat):
+    principled_data = get_material_node_of_type(mat, 'BSDF_PRINCIPLED')
+    if principled_data is None:
+        return
+        
+    alpha_input = principled_data.inputs["Alpha"]
+    if len(alpha_input.links) > 0:
+        return
+        
+    vc_node = mat.node_tree.nodes.new('ShaderNodeVertexColor')
+    mat.node_tree.links.new(vc_node.outputs["Alpha"], alpha_input)
+    
     
 def set_material_texture(mat, texture, make_image_node=True):
     if mat is None or mat.node_tree is None:

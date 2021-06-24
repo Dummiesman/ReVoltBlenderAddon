@@ -64,10 +64,11 @@ def export_mesh(file, ob, bm, env_list, is_world):
         
         # Colors
         for loop in reversed(face.loops):
-            color = loop[vc_layer]
+            color = list(loop[vc_layer])
 
             if face_type & common.POLY_FLAG_TRANSLUCENT:
-                color = (color[0], color[1], color[2], matinfo.alpha)
+                if not matinfo.mul_vertex_color:
+                    color[3] = matinfo.alpha
             
             rvcolor = common.to_rv_color(color) 
             file.write(struct.pack("<BBBB", *rvcolor))
