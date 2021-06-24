@@ -84,7 +84,10 @@ class RV_FaceMaterialHash:
         if self.flags & common.POLY_FLAG_MIRROR:
             bsdf.inputs['Specular'].default_value = 0.05
             mat.use_screen_refraction = True
-            
+        
+        if self.flags & common.POLY_FLAG_ADDITIVE:
+            common.set_material_additive_blend(mat)
+        
         return mat
 
     def set_env_color(self, env_color):

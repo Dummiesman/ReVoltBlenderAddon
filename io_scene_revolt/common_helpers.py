@@ -245,6 +245,27 @@ def set_material_vertex_blend(mat):
     vert_color_node = mat.node_tree.nodes.new('ShaderNodeVertexColor')
     mat.node_tree.links.new(vert_color_node.outputs['Color'], vc_output)
     
+
+def set_material_additive_blend(mat):
+    out_node = get_material_node_of_type(mat, 'OUTPUT_MATERIAL')
+    if out_node is None:
+        return
+        
+    surf_in = out_node.inputs["Surface"]
+    if len(surf_in.links) == 0:
+        return
+        
+    # store old socket, we'll need to hook this up to the add shader
+    old_socket = surf_in.links[0].from_socket
+    mat.node_tree.links.remove(surf_in.links[0])
+    
+    add_node = mat.node_tree.nodes.new('ShaderNodeAddShader')
+    transparent_node = mat.node_tree.nodes.new('ShaderNodeBsdfTransparent')
+    
+    mat.node_tree.links.new(transparent_node.outputs[0], add_node.inputs[1])
+    mat.node_tree.links.new(old_socket, add_node.inputs[0])
+    mat.node_tree.links.new(add_node.outputs[0], out_node.inputs["Surface"])
+
     
 def set_material_texture(mat, texture, make_image_node=True):
     if mat is None or mat.node_tree is None:

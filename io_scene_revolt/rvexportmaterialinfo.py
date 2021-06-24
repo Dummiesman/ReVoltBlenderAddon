@@ -17,7 +17,17 @@ class RVExportMaterialInfo:
             if mat.use_screen_refraction:
                 self.flags |= common.POLY_FLAG_MIRROR
 
-        principled = common.get_principled_from_material(mat) 
+        add_node = common.get_material_node_of_type(mat, 'ADD_SHADER')
+        if add_node is not None:
+            # check if the add node is connected to the output
+            # and has a transparent input. if those are true we can
+            # guess it's an additive setup
+            if (len(add_node.outputs[0].links) > 0 and add_node.outputs[0].links[0].to_node.type == 'OUTPUT_MATERIAL' and
+                (len(add_node.inputs[0].links) > 0 and add_node.inputs[0].links[0].from_node.type == 'BSDF_TRANSPARENT' or
+                 len(add_node.inputs[1].links) > 0 and add_node.inputs[1].links[0].from_node.type == 'BSDF_TRANSPARENT')):
+                 self.flags |= common.POLY_FLAG_ADDITIVE
+                
+        
         principled = common.get_material_node_of_type(mat, 'BSDF_PRINCIPLED')
         if principled is not None:
             # env flag
