@@ -202,13 +202,13 @@ def bm_to_world(bm, ob):
         vert.co = ob.matrix_world @ vert.co
 
 
-def get_principled_from_material(mat):
+def get_material_node_of_type(mat, typ):
     if mat is None:
         return None
 
     tree = mat.node_tree.nodes if mat.node_tree is not None else []    
     for node in tree:
-        if node.type == 'BSDF_PRINCIPLED':
+        if node.type == typ:
             return node
     return None
 
@@ -217,7 +217,7 @@ def set_material_vertex_blend(mat):
     if mat is None or mat.node_tree is None:
         return
 
-    principled_data = get_principled_from_material(mat)
+    principled_data = get_material_node_of_type(mat, 'BSDF_PRINCIPLED')
     if principled_data is None:
         return
     
@@ -258,7 +258,7 @@ def set_material_texture(mat, texture, make_image_node=True):
             
     # image node was not found
     if make_image_node:
-        principled_data = get_principled_from_material(mat)
+        principled_data = get_material_node_of_type(mat, 'BSDF_PRINCIPLED')
         if principled_data is not None:
             color_input = principled_data.inputs['Base Color']
             

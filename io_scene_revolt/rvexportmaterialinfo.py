@@ -18,6 +18,7 @@ class RVExportMaterialInfo:
                 self.flags |= common.POLY_FLAG_MIRROR
 
         principled = common.get_principled_from_material(mat) 
+        principled = common.get_material_node_of_type(mat, 'BSDF_PRINCIPLED')
         if principled is not None:
             # env flag
             spec_input = principled.inputs["Specular"]
