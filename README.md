@@ -24,6 +24,8 @@ The way you do flags etc has changed. The way I've written this is more of a WYS
 - Double sided flag is set by a material having the "Backface Culling" option turned OFF
 - Texture animations are currently not supported
 - Mirror flag is set by the "Screen Space Refraction" checkbox in material properties
+- To setup an additive material, set it up as described on this page: https://b3d.interplanety.org/en/blender-eevee-transparency-blend-modes-multiply-and-additive/
+- To use vertex alpha, add a "Vertex Color" node to the material, and connect the alpha output to the alpha input of the principled setup
 
 **The W exporter also functions as an alternative to WorldCut!** Just select the "Split Meshes" option upon exporting.
 
