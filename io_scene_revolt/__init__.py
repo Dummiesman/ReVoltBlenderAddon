@@ -302,7 +302,7 @@ class ImportMesh(bpy.types.Operator, ImportHelper):
 
     filename_ext = ".m"
     filter_glob: StringProperty(
-            default="*.m;*.prm",
+            default="*.m;*.prm;*.psm",
             options={'HIDDEN'},
             )
 
@@ -416,7 +416,7 @@ def menu_func_import(self, context):
     self.layout.separator()
     self.layout.label(text="Re-Volt Addon")
     self.layout.operator(ImportWorld.bl_idname, text="Re-Volt World (.w)")
-    self.layout.operator(ImportMesh.bl_idname, text="Re-Volt Mesh (.m/.prm)")
+    self.layout.operator(ImportMesh.bl_idname, text="Re-Volt Mesh (.m/.prm/.psm)")
     self.layout.operator(ImportHull.bl_idname, text="Re-Volt Hull (.hul)")
     self.layout.operator(ImportCollision.bl_idname, text="Re-Volt Collision (.ncp)")
     self.layout.operator(ImportMirrors.bl_idname, text="Re-Volt Mirrors (.rim)")

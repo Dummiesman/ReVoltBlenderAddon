@@ -33,8 +33,8 @@ def finalize_mesh_materials_stage2(filepath, materials):
 ######################################################
 # IMPORT
 ######################################################
-def load_mesh(file, is_world, env_queue, matdict = None):
-    poly_size = 60
+def load_mesh(file, is_world = False, env_queue = None, matdict = None, psx = False):
+    poly_size = 36 if psx else 60
     
     # create the object
     scn = bpy.context.scene
@@ -62,14 +62,24 @@ def load_mesh(file, is_world, env_queue, matdict = None):
     file.seek(poly_size * poly_count, 1)
     
     # read in vertices
-    for x in range(vertex_count):
-        vert = Vector(struct.unpack("<fff", file.read(12))) / common.RV_SCALE
-        vert = common.vec3_to_blender(vert)
-        
-        normal = struct.unpack("<fff", file.read(12))
-        normal = common.vec3_to_blender(normal)
-        
-        bm.verts.new(vert)
+    if psx:
+        for x in range(vertex_count):
+            vert = Vector(struct.unpack("<hhh", file.read(6))) / common.RV_SCALE / 10.0
+            vert = common.vec3_to_blender(vert)
+            
+            normal = Vector(struct.unpack("<hhh", file.read(6))) / 4096.0
+            normal = common.vec3_to_blender(normal)
+            
+            bm.verts.new(vert)
+    else:
+        for x in range(vertex_count):
+            vert = Vector(struct.unpack("<fff", file.read(12))) / common.RV_SCALE
+            vert = common.vec3_to_blender(vert)
+            
+            normal = struct.unpack("<fff", file.read(12))
+            normal = common.vec3_to_blender(normal)
+            
+            bm.verts.new(vert)
         
     bm.verts.ensure_lookup_table()
     mesh_end_file_location = file.tell()    
@@ -84,12 +94,23 @@ def load_mesh(file, is_world, env_queue, matdict = None):
         vertex_colors = []
         uvs = []
         
+        # colors
         for y in range(4):
             color = struct.unpack("<BBBB", file.read(4))
-            vertex_colors.append(common.from_rv_color(color))
-        for y in range(4):
-            uv = struct.unpack("<ff", file.read(8))
-            uvs.append(common.vec2_to_blender(uv))
+            color = common.from_rv_color_psx(color) if psx else common.from_rv_color(color)
+            vertex_colors.append(color)
+
+        # uvs
+        if psx:
+            for y in range(4):
+                uv = list(struct.unpack("<BB", file.read(2)))
+                uv[0] /= 255.0
+                uv[1] /= 255.0
+                uvs.append(common.vec2_to_blender(uv))
+        else:
+            for y in range(4):
+                uv = struct.unpack("<ff", file.read(8))
+                uvs.append(common.vec2_to_blender(uv))
            
         # hash, and get material
         poly_hash = RV_FaceMaterialHash(poly_texture, poly_type, is_world)
@@ -164,7 +185,9 @@ def load(operator,
     
     #
     shared_matdict = {}
-    load_mesh(file, False, None, shared_matdict)
+    is_psx = filepath.lower().endswith(".psm")
+    
+    load_mesh(file, matdict = shared_matdict, psx = is_psx)
 
     # cleanup     
     file.close()
