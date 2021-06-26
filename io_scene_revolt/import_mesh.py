@@ -9,12 +9,21 @@ from io_scene_revolt.rvfacehash import RV_FaceMaterialHash
 # HELPERS
 ######################################################
 def finalize_mesh_materials_stage1(filepath, materials):
-    filepath_ext = os.path.splitext(filepath)[1][1:].lower()
-    if filepath_ext != "prm":
+    filepath_lower = filepath.lower()
+    look_for_texture = None
+    
+    if filepath_lower.endswith("body.psm"):
+        look_for_texture = "TEXTURE.bmp"
+    elif filepath_lower.endswith("zody.psm"):
+        look_for_texture = "ZEXTURE.bmp"
+    elif filepath_lower.endswith("body.prm"):
+        look_for_texture = "car.bmp"
+    
+    if look_for_texture is None:
         return
 
     filepath_dir = os.path.dirname(filepath)
-    carbmp_path = os.path.join(filepath_dir, "car.bmp")
+    carbmp_path = os.path.join(filepath_dir, look_for_texture)
     
     if not os.path.isfile(carbmp_path):
         return
