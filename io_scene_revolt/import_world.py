@@ -167,7 +167,7 @@ def load(operator,
         # read vertices
         vertex_count = struct.unpack("<L", file.read(4))[0]
         for x in range(vertex_count):
-            vert = Vector(struct.unpack("<hhh", file.read(6))) / common.PSX_VERTEX_DIVISOR
+            vert = Vector(struct.unpack("<hhh", file.read(6))) / common.RV_SCALE
             normal = struct.unpack("<hhh", file.read(6))
             
             vert_list.append(common.vec3_to_blender(vert))
