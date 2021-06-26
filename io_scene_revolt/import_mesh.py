@@ -42,7 +42,7 @@ def finalize_mesh_materials_stage2(filepath, materials):
 ######################################################
 # IMPORT
 ######################################################
-def load_mesh(file, is_world = False, env_queue = None, matdict = None, psx = False):
+def load_mesh(file, is_world = False, env_queue = None, matdict = None, psx = False, vertlist = None):
     poly_size = 36 if psx else 60
     
     # create the object
@@ -59,36 +59,41 @@ def load_mesh(file, is_world = False, env_queue = None, matdict = None, psx = Fa
     
     # seek past bounding info if world
     if is_world:
-        file.seek(40, 1)
+        file.seek(8 if psx else 40, 1)
     
     # read mesh
     face_hashes = []
     face_materials = {} if matdict is None else matdict
     face_materials_to_matslot = {}
+    
+    vert_remap = {} 
+    used_verts = []
 
     poly_count, vertex_count = struct.unpack("<HH", file.read(4))
     poly_file_location = file.tell() 
     file.seek(poly_size * poly_count, 1)
     
     # read in vertices
-    if psx:
-        for x in range(vertex_count):
-            vert = Vector(struct.unpack("<hhh", file.read(6))) / common.RV_SCALE / 10.0
-            vert = common.vec3_to_blender(vert)
-            
-            normal = Vector(struct.unpack("<hhh", file.read(6))) / 4096.0
-            normal = common.vec3_to_blender(normal)
-            
-            bm.verts.new(vert)
-    else:
-        for x in range(vertex_count):
-            vert = Vector(struct.unpack("<fff", file.read(12))) / common.RV_SCALE
-            vert = common.vec3_to_blender(vert)
-            
-            normal = struct.unpack("<fff", file.read(12))
-            normal = common.vec3_to_blender(normal)
-            
-            bm.verts.new(vert)
+    if vertlist is None:
+        vertlist = []
+        if psx:
+            for x in range(vertex_count):
+                vert = Vector(struct.unpack("<hhh", file.read(6))) / common.RV_SCALE / common.PSX_VERTEX_DIVISOR
+                vert = common.vec3_to_blender(vert)
+                
+                normal = Vector(struct.unpack("<hhh", file.read(6))) / common.PSX_NORMAL_DIVISOR
+                normal = common.vec3_to_blender(normal)
+                
+                vertlist.append(vert)
+        else:
+            for x in range(vertex_count):
+                vert = Vector(struct.unpack("<fff", file.read(12))) / common.RV_SCALE
+                vert = common.vec3_to_blender(vert)
+                
+                normal = struct.unpack("<fff", file.read(12))
+                normal = common.vec3_to_blender(normal)
+                
+                vertlist.append(vert)
         
     bm.verts.ensure_lookup_table()
     mesh_end_file_location = file.tell()    
@@ -97,12 +102,28 @@ def load_mesh(file, is_world = False, env_queue = None, matdict = None, psx = Fa
     file.seek(poly_file_location)
     for x in range(poly_count):
         poly_type, poly_texture = struct.unpack("<Hh", file.read(4))
-        vertex_indices = struct.unpack("<HHHH", file.read(8))
+        vertex_indices = list(struct.unpack("<HHHH", file.read(8)))
         loop_count = 4 if poly_type & common.POLY_FLAG_QUAD else 3
         
         vertex_colors = []
         uvs = []
         
+        # remap (not typically needed, but PSW has a global vertex list, so we do this)
+        for x in range(loop_count):
+            index = vertex_indices[x]
+            new_index = -1
+            if not index in vert_remap:
+                new_index = len(used_verts)
+                vert_remap[index] = new_index
+                
+                vert = vertlist[index]
+                bmvert = bm.verts.new(vert)
+                used_verts.append(bmvert)
+            else:
+                new_index = vert_remap[index]
+
+            vertex_indices[x] = new_index
+            
         # colors
         for y in range(4):
             color = struct.unpack("<BBBB", file.read(4))
@@ -151,8 +172,8 @@ def load_mesh(file, is_world = False, env_queue = None, matdict = None, psx = Fa
             mat_index = face_materials_to_matslot[poly_hash]
        
         # create in bmesh
-        indices = list(reversed(vertex_indices[:loop_count]))
-        bmverts = [bm.verts[y] for y in indices]
+        indices = reversed(vertex_indices[:loop_count])
+        bmverts = [used_verts[y] for y in indices]
         
         try:
             face = bm.faces.new(bmverts)
