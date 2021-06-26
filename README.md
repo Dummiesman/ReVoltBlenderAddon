@@ -8,6 +8,9 @@ Collision (\*.ncp) export and import
 Hull (\*.hul) export and import*  
 Mirror Planes (\*.rim) export and import  
 
+PSX Mesh (\*.psm) import  
+PSX World (\*.psw) import  
+
 *\*this re-creates the hull based on it's vertices*
 
 ## Installation (Windows)
@@ -44,3 +47,6 @@ The way collision is setup has changed.
 - Any object named "MirrorPlane" is exported as mirror planes
   - Using "Selected Only" will override this behavior
 
+## KNOWN ISSUES
+- PSX import may have incorrectly created materials
+- PSX stores double sided polygons as individual polygons, and Blender doesn't like 2 polygons sharing vertices. So these don't import currently.
