@@ -19,6 +19,7 @@ from bpy.props import (
         FloatProperty,
         StringProperty,
         CollectionProperty,
+        PointerProperty
         )
 from bpy_extras.io_utils import (
         ImportHelper,
@@ -27,6 +28,7 @@ from bpy_extras.io_utils import (
 
 from io_scene_revolt.bakehelper import RVBakeHelper
 from io_scene_revolt.ncpsetup import NCPSetupOperator
+import io_scene_revolt.animtex as animtex
 import io_scene_revolt.bl_preferences as bl_preferences
 
 class ExportWorld(bpy.types.Operator, ExportHelper):
@@ -444,20 +446,27 @@ classes = (
 
 def register():
     bl_preferences.register()
+    animtex.register()
     for cls in classes:
         bpy.utils.register_class(cls)
-
+    
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
     bpy.types.VIEW3D_MT_object.append(menu_func_ops)
+    
+    bpy.types.Scene.rv_animtex = PointerProperty(type=animtex.TextureAnimations)
+
 
 def unregister():
+    del bpy.types.Scene.rv_animtex
+
     bpy.types.VIEW3D_MT_object.remove(menu_func_ops)
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
     
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
+    animtex.unregister()
     bl_preferences.unregister()
 
 if __name__ == "__main__":
