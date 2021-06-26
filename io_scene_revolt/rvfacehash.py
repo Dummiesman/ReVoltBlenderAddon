@@ -12,6 +12,9 @@ class RV_FaceMaterialHash:
         else:
             flags &= ~common.POLY_FLAG_ENABLEENV
             flags &= ~common.POLY_FLAG_MIRROR
+        
+        flags &= ~common.POLY_FLAG_PSXMODEL1
+        flags &= ~common.POLY_FLAG_PSXMODEL2
 
         # ----
         self.texnum = texnum

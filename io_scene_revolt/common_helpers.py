@@ -9,6 +9,8 @@ import os.path as path
 POLY_FLAG_QUAD = 0x01
 POLY_FLAG_DOUBLESIDED = 0x02
 POLY_FLAG_TRANSLUCENT = 0x04
+POLY_FLAG_PSXMODEL1 = 0x20
+POLY_FLAG_PSXMODEL2 = 0x40
 POLY_FLAG_MIRROR = 0x80
 POLY_FLAG_ADDITIVE = 0x100
 POLY_FLAG_ANIMATED = 0x200
@@ -21,6 +23,9 @@ COLL_FLAG_CAMERA_ONLY = 0x08
 
 RV_SCALE = 10
 BCUBE_SIZE = 12500
+
+PSX_VERTEX_DIVISOR = 10.0
+PSX_NORMAL_DIVISOR = 4096.0
 
 def get_undupe_name(name):
     nidx = name.find('.')
@@ -78,6 +83,14 @@ def vec3_to_blender(co):
 def vec2_to_blender(co):
     # symmetric operation
     return vec2_to_revolt(co)
+
+
+def from_rv_color_psx(color):
+    b = max(0, min(float(color[0]) / 255, 1))
+    g = max(0, min(float(color[1]) / 255, 1))
+    r = max(0, min(float(color[2]) / 255, 1))
+    a = max(0, min(float(color[3]) / 255, 1))
+    return (b,g,r,a)
 
 
 def from_rv_color(color):
