@@ -13,6 +13,12 @@ class RV_FaceMaterialHash:
             flags &= ~common.POLY_FLAG_ENABLEENV
             flags &= ~common.POLY_FLAG_MIRROR
         
+        # psx texture num
+        if flags & common.POLY_FLAG_PSXMODEL1:
+            texnum = 0
+        elif flags & common.POLY_FLAG_PSXMODEL2:
+            texnum = 1
+        
         flags &= ~common.POLY_FLAG_PSXMODEL1
         flags &= ~common.POLY_FLAG_PSXMODEL2
 
