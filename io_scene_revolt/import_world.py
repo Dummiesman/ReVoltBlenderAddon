@@ -9,31 +9,72 @@ from io_scene_revolt.rvfacehash import RV_FaceMaterialHash
 ######################################################
 # HELPERS
 ######################################################
-def seek_past_mesh(file):
-    poly_size = 60
-    vert_size = 24
+def read_texanims_from_w(file):
+    scene = bpy.context.scene
+    animtex = scene.rv_animtex
+    anims = animtex.slots
+    
+    # clear existing
+    animtex.clear()
+    
+    #
+    anim_count = struct.unpack("<L", file.read(4))[0]
+    for x in range(anim_count):
+        anim = anims.add()
+        frame_count = struct.unpack("<L", file.read(4))[0]
+        
+        for y in range(frame_count):
+            frame = anim.frames.add()
+            
+            frame_tex, frame_delay = struct.unpack("<lf", file.read(8))
+            uv0 = struct.unpack("<ff", file.read(8))
+            uv1 = struct.unpack("<ff", file.read(8))
+            uv2 = struct.unpack("<ff", file.read(8))
+            uv3 = struct.unpack("<ff", file.read(8))
+            
+            frame.texture_number = frame_tex
+            frame.delay = int(frame_delay)
+            frame.set_uv(0, uv0)
+            frame.set_uv(1, uv1)
+            frame.set_uv(2, uv2)
+            frame.set_uv(3, uv3)
+    
+
+def seek_past_mesh(file, psx = False):
+    poly_size = 36 if psx else 60
+    vert_size = 12 if psx else 24
     
     # seek past bounding info
-    file.seek(40, 1)
+    file.seek(8 if psx else 40, 1)
     
     poly_count, vertex_count = struct.unpack("<HH", file.read(4))
+    
     # seek past polygons and verts
-    file.seek((poly_count * poly_size) + (vertex_count * vert_size), 1)
+    if psx:
+        file.seek(poly_count * poly_size, 1)
+    else:
+        file.seek((poly_count * poly_size) + (vertex_count * vert_size), 1)
 
     
-def seek_past_fball(file):
-    # seek past center/radius
-    file.seek(16, 1)
+def seek_past_bcubes(file, psx = False):
+    bcube_count = 0
+    if psx:
+        bcube_count = struct.unpack("<H", file.read(2))[0]
+    else:
+        bcube_count = struct.unpack("<L", file.read(4))[0]
     
-    index_count = struct.unpack("<L", file.read(4))[0]
-    file.seek(index_count * 4, 1)
-
-    
-def seek_past_texanim(file):
-    frame_count = struct.unpack("<L", file.read(4))[0]
-    file.seek(40 * frame_count, 1)
+    for x in range(bcube_count):
+        # seek past center/radius
+        file.seek(8 if psx else 16, 1)
         
+        if psx:
+            index_count = struct.unpack("<H", file.read(2))[0]
+            file.seek(index_count * 2, 1)
+        else:
+            index_count = struct.unpack("<L", file.read(4))[0]
+            file.seek(index_count * 4, 1)
 
+    
 def finalize_world_materials(filepath, materials):
     filepath_noext = os.path.splitext(filepath)[0]
     loaded_textures = {}
@@ -89,40 +130,56 @@ def load(operator,
     # import world
     file = open(filepath, 'rb')
     
-    # seek alllllll the way to the end to get our env list.
-    mesh_count = struct.unpack("<L", file.read(4))[0]
-    meshes_file_pos = file.tell()
-    for x in range(mesh_count):
-        seek_past_mesh(file)
-        
-    fball_count = struct.unpack("<L", file.read(4))[0]
-    for x in range(fball_count):
-        seek_past_fball(file)
-        
-    anim_count = struct.unpack("<L", file.read(4))[0]
-    for x in range(anim_count):
-        seek_past_texanim(file)
+    is_psx = filepath.lower().endswith(".psw")
 
-    # we're here
-    env_list_file_pos = file.tell()
-    file.seek(0, 2)
-    env_list_length = file.tell() - env_list_file_pos
-    env_list_count = int(env_list_length / 4)
-    file.seek(env_list_file_pos)
-    
     env_list = collections.deque()
-    for x in range(env_list_count):
-        color = struct.unpack("<BBBB", file.read(4))
-        color = common.from_rv_color(color)
-        env_list.append(color)
-    
+    vert_list = [] if is_psx else None
+
+    # seek alllllll the way to the end to get our env list on PC
+    # otherwise we seek to the end for vert list for PSX
+    mesh_count = struct.unpack("<L", file.read(4))[0]
+    meshes_file_pos = file.tell()    
+
+    for x in range(mesh_count):
+        seek_past_mesh(file, psx = is_psx)
+            
+    seek_past_bcubes(file, psx = is_psx)
+        
+    # read texanims, and env list if pc
+    # else read vertices if psx
+    if not is_psx:
+        # read texanims 
+        read_texanims_from_w(file)
+
+        # we're here
+        env_list_file_pos = file.tell()
+        file.seek(0, 2)
+        env_list_length = file.tell() - env_list_file_pos
+        env_list_count = int(env_list_length / 4)
+        file.seek(env_list_file_pos)
+        
+        for x in range(env_list_count):
+            color = struct.unpack("<BBBB", file.read(4))
+            color = common.from_rv_color(color)
+            env_list.append(color)
+
+    else:
+        # read vertices
+        vertex_count = struct.unpack("<L", file.read(4))[0]
+        for x in range(vertex_count):
+            vert = Vector(struct.unpack("<hhh", file.read(6))) / common.PSX_VERTEX_DIVISOR
+            normal = struct.unpack("<hhh", file.read(6))
+            
+            vert_list.append(common.vec3_to_blender(vert))
+            
+            
     # now go back and read meshes
     file.seek(meshes_file_pos)
     
     # load_mesh(file, is_world, env_queue, matdict = None):
     shared_matdict = {}
     for x in range(mesh_count):
-        import_mesh.load_mesh(file, True, env_list, shared_matdict)
+        import_mesh.load_mesh(file, is_world = True, env_queue = env_list, matdict = shared_matdict, psx = is_psx, vertlist = vert_list)
     
     # cleanup     
     file.close()
