@@ -46,8 +46,8 @@ class RVExportMaterialInfo:
                     # check if vertex alpha is one of the inputs for math, and math mode is multiply
                     math_node = alpha_links[0].from_node
                     
-                    self.mul_vertex_color = (len(math_node.inputs[0].links) > 0 and math_node.inputs[0].links[0].from_node.type == 'VERTEX_COLOR' and math_node.inputs[0].links[0].from_socket.name == 'Alpha'
-                                             len(math_node.inputs[1].links) > 0 and math_node.inputs[1].links[0].from_node.type == 'VERTEX_COLOR' and math_node.inputs[1].links[0].from_socket.name == 'Alpha')
+                    self.mul_vertex_color = ((len(math_node.inputs[0].links) > 0 and math_node.inputs[0].links[0].from_node.type == 'VERTEX_COLOR' and math_node.inputs[0].links[0].from_socket.name == 'Alpha') or
+                                             (len(math_node.inputs[1].links) > 0 and math_node.inputs[1].links[0].from_node.type == 'VERTEX_COLOR' and math_node.inputs[1].links[0].from_socket.name == 'Alpha'))
         
             if is_world:
                 if len(spec_links) > 0 and spec_links[0].from_node.type == 'RGB':
