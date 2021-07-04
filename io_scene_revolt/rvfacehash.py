@@ -46,15 +46,16 @@ class RV_FaceMaterialHash:
         if self.flags & common.POLY_FLAG_ADDITIVE:
             flags_str += "Add"
         if self.flags & common.POLY_FLAG_MIRROR:
-            flags_str += "Mirror"
-        if self.flags & common.POLY_FLAG_ANIMATED:
-            flags_str += "Anim"
+            flags_str += "Mirror" 
         
         name_str = "RVMaterial_"
         if self.texnum < 0:
             name_str += "NoTex"
         else:
-            name_str += "Tex" + str(self.texnum)
+            if self.flags & common.POLY_FLAG_ANIMATED:
+                name_str += "Anim" + str(self.texnum)
+            else:
+                name_str += "Tex" + str(self.texnum)
             
         if len(flags_str) > 0:
             name_str += "_" + flags_str
@@ -97,6 +98,10 @@ class RV_FaceMaterialHash:
         
         if self.flags & common.POLY_FLAG_ADDITIVE:
             common.set_material_additive_blend(mat)
+        
+        # create animation slot property
+        if self.flags & common.POLY_FLAG_ANIMATED:
+            mat["anim_slot"] = self.texnum
         
         return mat
 

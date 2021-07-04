@@ -3,6 +3,7 @@ import bmesh
 from bpy.props import (
         CollectionProperty,
         IntProperty,
+        FloatProperty,
         PointerProperty,
         FloatVectorProperty
         )
@@ -23,9 +24,9 @@ class TextureAnimationFrame(PropertyGroup):
         max = 64
         )
         
-    delay: IntProperty(
+    delay: FloatProperty(
         name = "Delay",
-        description="Delay in milliseconds",
+        description="Delay in seconds",
         default = 0,
         min = 0
         )

@@ -110,6 +110,29 @@ def make_multi_bigcube(mesh_list):
     
     return bcubes    
 
+
+def export_texanims(file):
+    scene = bpy.context.scene
+    animtex = scene.rv_animtex
+    anims = animtex.slots
+    
+    num_anims = len(anims)
+    file.write(struct.pack('<L', num_anims)) 
+    
+    for x in range(num_anims):
+        frames = anims[x].frames
+        num_frames = len(frames)
+        
+        file.write(struct.pack('<L', num_frames))
+        for y in range(num_frames):
+            frame = frames[y]
+            
+            file.write(struct.pack('<lf', frame.texture_number, frame.delay))
+            file.write(struct.pack('<ff', *tuple(frame.get_uv(0))))
+            file.write(struct.pack('<ff', *tuple(frame.get_uv(1))))
+            file.write(struct.pack('<ff', *tuple(frame.get_uv(2))))
+            file.write(struct.pack('<ff', *tuple(frame.get_uv(3))))
+
 ######################################################
 # EXPORT
 ######################################################
@@ -124,6 +147,7 @@ def save(operator,
     
     import io_scene_revolt.export_mesh as export_mesh
     print("exporting World: %r..." % (filepath))
+    
     time1 = time.perf_counter()
     wm = bpy.context.window_manager
     wm.progress_begin(0, 1)
@@ -201,7 +225,7 @@ def save(operator,
     
     # Texanim List
     print(" ... texanim writing (%.4f)" % (time.perf_counter() - time1))
-    file.write(struct.pack('L', 0)) # not supported for now
+    export_texanims(file)
     
     # Env List
     for color in env_list:

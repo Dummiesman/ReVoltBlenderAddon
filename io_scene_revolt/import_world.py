@@ -33,7 +33,7 @@ def read_texanims_from_w(file):
             uv3 = struct.unpack("<ff", file.read(8))
             
             frame.texture_number = frame_tex
-            frame.delay = int(frame_delay)
+            frame.delay = frame_delay
             frame.set_uv(0, uv0)
             frame.set_uv(1, uv1)
             frame.set_uv(2, uv2)
@@ -80,7 +80,7 @@ def finalize_world_materials(filepath, materials):
     loaded_textures = {}
     
     for mat in materials:
-        if "NoTex" in mat.name or not "RVMaterial" in mat.name:
+        if "NoTex" in mat.name or not "RVMaterial" or "Anim" in mat.name:
             continue
         
         # extract texnum from material name

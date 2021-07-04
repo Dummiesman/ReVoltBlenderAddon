@@ -17,6 +17,13 @@ class RVExportMaterialInfo:
                 self.flags |= common.POLY_FLAG_TRANSLUCENT
             if mat.use_screen_refraction:
                 self.flags |= common.POLY_FLAG_MIRROR
+                
+            if is_world and "anim_slot" in mat:
+                anim_slot = mat["anim_slot"]
+                if type(anim_slot) is int or type(anim_slot) is float:
+                    anim_slot = int(anim_slot)
+                    self.texnum = anim_slot
+                    self.flags |= common.POLY_FLAG_ANIMATED
 
         add_node = common.get_material_node_of_type(mat, 'ADD_SHADER')
         if add_node is not None:
