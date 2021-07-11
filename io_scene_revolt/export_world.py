@@ -60,50 +60,85 @@ def make_single_bigcube(mesh_list):
 
 def make_multi_bigcube(mesh_list):
     bcubes = []
-    
+
     scene_bounds, ob_bounds_all, bcubes_dim, bcubes_size = prep_bigcube_data(mesh_list)
     scene_min, scene_max = scene_bounds
     bcubes_x, bcubes_y = bcubes_dim
     bcube_size_x, bcube_size_y = bcubes_size
     
-    # Re-Volt stores game data in the cube structures
-    # using the same index twice will result in crashing due to deallocation stuff
-    already_used_meshes = set()
-
+    # create bcube structures
     for y in range(bcubes_y):
         for x in range(bcubes_x):
             bcube_bounds_min = [scene_min[0] + (bcube_size_x * x),       scene_min[1] + (bcube_size_y * y),       float('inf')]
             bcube_bounds_max = [scene_min[0] + (bcube_size_x * (x + 1)), scene_min[1] + (bcube_size_y * (y + 1)), float('-inf')]
-            
-            # find intersecting meshes
-            intersecting_indices = []
-            for ob, meshes, indices in mesh_list:
-                for mesh, index in zip(meshes, indices):
-                    if index in already_used_meshes:
-                        continue
-                        
-                    bm_bounds_min, bm_bounds_max = common.bmesh_bounds_scaled(mesh, common.RV_SCALE)
-                    if not bounds_intersect(bm_bounds_min, bm_bounds_max, bcube_bounds_min, bcube_bounds_max):
-                        continue
-                    
-                    # add to index list, this intersects
-                    intersecting_indices.append(index)
-                    already_used_meshes.add(index)
-                    
-                    # size down cube vertical bounds to fit the mesh
-                    bcube_bounds_min[2] = min(bm_bounds_min[2], bcube_bounds_min[2])
-                    bcube_bounds_max[2] = max(bm_bounds_max[2], bcube_bounds_max[2])
-            
-            # get center and radius
+        
             bcube_center = ((bcube_bounds_max[0] + bcube_bounds_min[0]) / 2, 
                             (bcube_bounds_max[1] + bcube_bounds_min[1]) / 2, 
                             (bcube_bounds_max[2] + bcube_bounds_min[2]) / 2)
                             
-
-            if len(intersecting_indices) > 0:
-                bcubes.append((intersecting_indices, (bcube_bounds_min, bcube_bounds_max), bcube_center, bcube_radius))
             bcube_radius = common.bounds_radius(bcube_bounds_min, bcube_bounds_max)
+            
+            bcubes.append(([], (bcube_bounds_min, bcube_bounds_max), bcube_center, bcube_radius))
+            
+    # Re-Volt stores game data in the cube structures
+    # using the same index twice will result in crashing due to deallocation stuff
+    # So the next step is to find the *best* bigcube for each mesh
+    bcube_mesh_data = []
+    for ob, meshes, indices in mesh_list:
+        for mesh, index in zip(meshes, indices):
+            # mesh, mesh_bounds, mesh_index, [possible_bcubes]
+            bm_bounds_min, bm_bounds_max = common.bmesh_bounds_scaled(mesh, common.RV_SCALE)
+            bcube_mesh_data.append((mesh, (bm_bounds_min, bm_bounds_max), index, []))
     
+    for mesh, mesh_bounds, mesh_index, possible_bcubes in bcube_mesh_data:
+        bm_bounds_min, bm_bounds_max = mesh_bounds
+        
+        for y in range(bcubes_y):
+            for x in range(bcubes_x):
+                bcube = bcubes[(y * bcubes_x) + x]
+                bcube_bounds_min, bcube_bounds_max = bcube[1]
+                
+                if not bounds_intersect(bm_bounds_min, bm_bounds_max, bcube_bounds_min, bcube_bounds_max):
+                    continue
+                    
+                possible_bcubes.append(bcube)
+                
+    # now find the best bcube for each mesh
+    for mesh, mesh_bounds, mesh_index, possible_bcubes in bcube_mesh_data:
+        max_overlap = float('-inf')
+        max_overlap_index = -1
+        bm_bounds_min, bm_bounds_max = mesh_bounds
+        
+        for bcube_index in range(len(possible_bcubes)):
+            bcube = possible_bcubes[bcube_index]
+            bcube_bounds_min, bcube_bounds_max = bcube[1]
+                
+            # check the amount of intersect
+            x_overlap = max(0, min(bm_bounds_max[0], bm_bounds_max[0]) - max(bm_bounds_min[0], bcube_bounds_min[0]))
+            y_overlap = max(0, min(bm_bounds_max[1], bm_bounds_max[1]) - max(bm_bounds_min[1], bcube_bounds_min[1]))
+            overlap_area = x_overlap * y_overlap
+            
+            if overlap_area <= max_overlap:
+                continue
+            
+            max_overlap = overlap_area
+            max_overlap_index = bcube_index
+        
+        # add to best bcube 
+        if max_overlap_index >= 0:
+            best_bcube = possible_bcubes[max_overlap_index]
+            bcube_bounds_min, bcube_bounds_max = best_bcube[1]
+            
+            # add to index list, this intersects
+            best_bcube[0].append(mesh_index)
+            
+            # size down cube vertical bounds to fit the mesh
+            bcube_bounds_min[2] = min(bm_bounds_min[2], bcube_bounds_min[2])
+            bcube_bounds_max[2] = max(bm_bounds_max[2], bcube_bounds_max[2])
+    
+    
+    # return only bcubes with indices
+    bcubes = [x for x in bcubes if len(x[0]) > 0]
     return bcubes    
 
 
