@@ -49,9 +49,7 @@ def make_single_bigcube(mesh_list):
     scene_center = ((scene_min[0] + scene_max[0]) / 2,
                     (scene_min[1] + scene_max[1]) / 2,
                     (scene_min[2] + scene_max[2]) / 2)
-    scene_radius = max(abs(scene_max[0] - scene_min[0]),
-                       abs(scene_max[1] - scene_min[1]),
-                       abs(scene_max[2] - scene_min[2]))
+    scene_radius = common.bounds_radius(scene_min, scene_max)
 
     total_indices = []
     for ob, meshes, indices in mesh_list:
@@ -101,12 +99,10 @@ def make_multi_bigcube(mesh_list):
                             (bcube_bounds_max[1] + bcube_bounds_min[1]) / 2, 
                             (bcube_bounds_max[2] + bcube_bounds_min[2]) / 2)
                             
-            bcube_radius = max(abs(bcube_bounds_max[0] - bcube_bounds_min[0]), 
-                               abs(bcube_bounds_max[1] - bcube_bounds_min[1]),
-                               abs(bcube_bounds_max[2] - bcube_bounds_min[2]))
 
             if len(intersecting_indices) > 0:
                 bcubes.append((intersecting_indices, (bcube_bounds_min, bcube_bounds_max), bcube_center, bcube_radius))
+            bcube_radius = common.bounds_radius(bcube_bounds_min, bcube_bounds_max)
     
     return bcubes    
 

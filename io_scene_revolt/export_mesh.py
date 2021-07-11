@@ -20,7 +20,7 @@ def export_mesh(file, ob, bm, env_list, is_world):
         # write bounding info for world
         me_bounds_min, me_bounds_max = common.bmesh_bounds_scaled_rv(bm, common.RV_SCALE)
         me_center = ((me_bounds_max[0] + me_bounds_min[0]) / 2, (me_bounds_max[1] + me_bounds_min[1]) / 2, (me_bounds_max[2] + me_bounds_min[2]) / 2)
-        me_radius = max(abs(me_bounds_max[0] - me_bounds_min[0]), abs(me_bounds_max[1] - me_bounds_min[1]), abs(me_bounds_max[2] - me_bounds_min[2]))
+        me_radius = common.bounds_radius(me_bounds_min, me_bounds_max)
         
         # center and radius
         file.write(struct.pack("<fff", *me_center))

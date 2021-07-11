@@ -4,6 +4,7 @@ from mathutils import Vector, Matrix
 
 import os
 import os.path as path
+import math
 
 # constants
 POLY_FLAG_QUAD = 0x01
@@ -208,6 +209,18 @@ def bmesh_bounds_scaled_rv(bm, scale):
     bnds_min = vec3_to_revolt(bnds_min)
     bnds_max = vec3_to_revolt(bnds_max)
     return ((bnds_min[0], bnds_max[1], bnds_min[2]), (bnds_max[0], bnds_min[1], bnds_max[2]))
+
+
+def bounds_radius(bmin, bmax):
+    bcenter = ((bmax[0] + bmin[0]) / 2.0, (bmax[1] + bmin[1]) / 2.0, (bmax[2] + bmin[2]) / 2.0)
+    
+    dmin = (bcenter[0] - bmin[0], bcenter[1] - bmin[1], bcenter[2] - bmin[2])
+    dmax = (bmax[0] - bcenter[0], bmax[1] - bcenter[1], bmax[2] - bcenter[2])
+    
+    dmin_mag = (dmin[0] * dmin[0] + dmin[1] * dmin[1] + dmin[2] * dmin[2])
+    dmax_mag = (dmax[0] * dmax[0] + dmax[1] * dmax[1] + dmax[2] * dmax[2])
+    
+    return math.sqrt(max(dmin_mag, dmax_mag))
 
 
 def bm_to_world(bm, ob):
