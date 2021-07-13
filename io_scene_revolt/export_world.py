@@ -132,9 +132,14 @@ def make_multi_bigcube(mesh_list):
             # add to index list, this intersects
             best_bcube[0].append(mesh_index)
             
-            # size down cube vertical bounds to fit the mesh
+            # adjust the bounds of the bcube
             bcube_bounds_min[2] = min(bm_bounds_min[2], bcube_bounds_min[2])
             bcube_bounds_max[2] = max(bm_bounds_max[2], bcube_bounds_max[2])
+            
+            bcube_bounds_min[0] = min(bm_bounds_min[0], bcube_bounds_min[0])
+            bcube_bounds_min[1] = min(bm_bounds_min[1], bcube_bounds_min[1])
+            bcube_bounds_max[0] = max(bm_bounds_max[0], bcube_bounds_max[0])
+            bcube_bounds_max[1] = max(bm_bounds_max[1], bcube_bounds_max[1])
     
     
     # return only bcubes with indices
