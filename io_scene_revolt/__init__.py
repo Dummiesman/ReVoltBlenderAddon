@@ -29,6 +29,7 @@ from bpy_extras.io_utils import (
 from io_scene_revolt.bakehelper import RVBakeHelper
 from io_scene_revolt.ncpsetup import NCPSetupOperator
 import io_scene_revolt.animtex as animtex
+import io_scene_revolt.animtex_ui as animtex_ui
 import io_scene_revolt.bl_preferences as bl_preferences
 
 class ExportWorld(bpy.types.Operator, ExportHelper):
@@ -447,6 +448,7 @@ classes = (
 def register():
     bl_preferences.register()
     animtex.register()
+    animtex_ui.register()
     for cls in classes:
         bpy.utils.register_class(cls)
     
@@ -467,6 +469,7 @@ def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
     animtex.unregister()
+    animtex_ui.unregister()
     bl_preferences.unregister()
 
 if __name__ == "__main__":
