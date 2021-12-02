@@ -333,7 +333,20 @@ class ImportHull(bpy.types.Operator, ImportHelper):
             options={'HIDDEN'},
             )
 
-       
+    psx: BoolProperty(
+        name="PSX",
+        default=False,
+        )
+        
+    def draw(self, context):
+        layout = self.layout
+        sub = layout.row()
+        sub.label(text="[WARNING] Make sure to check this when importing PSX hulls.")
+        sub = layout.row()
+        sub.label(text="failure to do so may cause Blender to crash!")
+        sub = layout.row()
+        sub.prop(self, "psx")
+
     def execute(self, context):
         from . import import_hul
         

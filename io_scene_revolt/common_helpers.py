@@ -27,6 +27,7 @@ BCUBE_SIZE = 12500
 
 PSX_VERTEX_DIVISOR = 8.0
 PSX_NORMAL_DIVISOR = 4096.0
+PSX_VERTEX_DIVISOR_32 = 4096.0
 
 def get_undupe_name(name):
     nidx = name.find('.')

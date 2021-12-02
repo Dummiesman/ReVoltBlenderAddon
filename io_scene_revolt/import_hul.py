@@ -8,9 +8,16 @@ import io_scene_revolt.common_helpers as common
 ######################################################
 # IMPORT
 ######################################################
+def read_float(file, psx):
+    return struct.unpack("<l", file.read(4))[0] / common.PSX_VERTEX_DIVISOR_32 if psx else  struct.unpack("<f", file.read(4))[0]
+    
+def read_vector(file, psx):
+    return (read_float(file, psx), read_float(file, psx), read_float(file, psx))
+
 def load(operator,
          context,
-         filepath=""
+         filepath="",
+         psx = False
          ):
 
     print("importing Hull: %r..." % (filepath))
@@ -31,7 +38,7 @@ def load(operator,
         
         verts = []
         for y in range(vert_count):
-            vert = common.vec3_to_blender(struct.unpack("<fff", file.read(12)))
+            vert = common.vec3_to_blender(read_vector(file, psx))
             vert = Vector(vert) / common.RV_SCALE
             verts.append(vert)
 
@@ -76,10 +83,10 @@ def load(operator,
     bm.free()
     
     for x in range(sphere_count):
-        center = common.vec3_to_blender(struct.unpack("<fff", file.read(12)))
+        center = common.vec3_to_blender(read_vector(file, psx))
         center = Vector(center) / common.RV_SCALE
         
-        radius = struct.unpack("<f", file.read(4))[0] / common.RV_SCALE
+        radius = read_float(file, psx) / common.RV_SCALE
 
         ob = bpy.data.objects.new("HullSphere", me)
         ob.data.materials.append(sph_material)
