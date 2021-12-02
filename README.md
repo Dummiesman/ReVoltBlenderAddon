@@ -8,7 +8,7 @@ Collision (\*.ncp) export and import
 Hull (\*.hul) export and import*  
 Mirror Planes (\*.rim) export and import  
 
-PSX Hull (\*.hul) import  
+PSX Hull (\*.hul) import* 
 PSX Mesh (\*.psm) import  
 PSX World (\*.psw) import  
 
