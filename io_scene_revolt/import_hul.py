@@ -74,7 +74,7 @@ def load(operator,
     sphere_count = struct.unpack("<H", file.read(2))[0]
     
     bm = bmesh.new()
-    bmesh.ops.create_uvsphere(bm, u_segments=16, v_segments=8, diameter=1)
+    bmesh.ops.create_uvsphere(bm, u_segments=16, v_segments=8, radius=1)
     for face in bm.faces:
         face.smooth = True
 
