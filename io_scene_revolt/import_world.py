@@ -129,6 +129,9 @@ def load(operator,
     
     # import world
     file = open(filepath, 'rb')
+    file.seek(0, 2)
+    file_size = file.tell()
+    file.seek(0, 0)
     
     is_psx = filepath.lower().endswith(".psw")
 
@@ -148,20 +151,22 @@ def load(operator,
     # read texanims, and env list if pc
     # else read vertices if psx
     if not is_psx:
-        # read texanims 
-        read_texanims_from_w(file)
+        # some files just end here
+        if file.tell() < file_size:
+            # read texanims 
+            read_texanims_from_w(file)
 
-        # we're here
-        env_list_file_pos = file.tell()
-        file.seek(0, 2)
-        env_list_length = file.tell() - env_list_file_pos
-        env_list_count = int(env_list_length / 4)
-        file.seek(env_list_file_pos)
-        
-        for x in range(env_list_count):
-            color = struct.unpack("<BBBB", file.read(4))
-            color = common.from_rv_color(color)
-            env_list.append(color)
+            # we're here
+            env_list_file_pos = file.tell()
+            file.seek(0, 2)
+            env_list_length = file.tell() - env_list_file_pos
+            env_list_count = int(env_list_length / 4)
+            file.seek(env_list_file_pos)
+            
+            for x in range(env_list_count):
+                color = struct.unpack("<BBBB", file.read(4))
+                color = common.from_rv_color(color)
+                env_list.append(color)
 
     else:
         # read vertices
