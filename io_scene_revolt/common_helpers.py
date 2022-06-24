@@ -343,6 +343,9 @@ def get_material_texture(mat):
 
 
 def get_texnum_from_texname(texname):
+    if len(texname) == 0:
+        return -1
+    
     return_num = -1
     last_char = texname[-1]
     if last_char >= 'a' and last_char <= 'z':
