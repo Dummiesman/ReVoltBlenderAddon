@@ -1,3 +1,6 @@
+## Archival : March 14th 2026 
+This addon never saw real world usage outside of one or two people, and was immediately replaced by someone creating an addon within a month of its release. It also only works with Blender 2.9/early 3.x. It is not recommended to use this.
+
 # ReVoltBlenderAddon
 A Blender addon I created because I wanted to work with Blender 2.9+, and the existing one wasn't compatible.
 
